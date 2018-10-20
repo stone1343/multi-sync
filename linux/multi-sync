@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+INSTALL_DIR=$HOME/.multi-sync
+lua=$INSTALL_DIR/lua
+ms=$INSTALL_DIR/multi-sync.lua
+
+export MS_COMPUTERNAME=$(hostname)
+export MS_USERNAME=$USER
+export MS_APPDATA="$HOME/.config"
+export MS_EDITOR=nano
+
+export LUA_PATH="$INSTALL_DIR/?.lua;;"
+export LUA_CPATH="$INSTALL_DIR/?.so;;"
+
+# Find Lua
+if [[ ! -f "$lua" ]]
+then
+  echo "Lua not found"
+  exit 1
+fi
+
+# Find multi-sync.lua
+if [[ -f "$ms" ]]
+then
+  $lua $ms "$@"
+else
+  echo $ms not found
+fi
+
+exit $?
