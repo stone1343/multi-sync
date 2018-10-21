@@ -8,5 +8,6 @@ if "%1"=="" (
 if not exist %1\ (
   mkdir %1
 )
-rem Copy executables and multi-sync-config.lua
+rem Copy executables and multi-sync itslef
 xcopy /s /d /y windows\*.* %1
+xcopy /s /d /y multi-sync.lua %1

@@ -103,8 +103,8 @@ yes | cp $LUASQL/src/sqlite3.so $INSTALL_DIR/luasql
 yes | cp $ARGPARSE/src/argparse.lua $INSTALL_DIR
 yes | cp -r $PENLIGHT/lua/pl/* $INSTALL_DIR/pl
 yes | cp linux/multi-sync $INSTALL_DIR
-yes | cp linux/multi-sync.lua $INSTALL_DIR
 yes | cp linux/multi-sync-config.lua $INSTALL_DIR
+yes | cp multi-sync.lua $INSTALL_DIR
 chmod +x $INSTALL_DIR/multi-sync
 
 # Now install multi-sync in ~/bin as a symbolic link

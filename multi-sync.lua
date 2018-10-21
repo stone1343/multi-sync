@@ -23,8 +23,9 @@
 -- v2.1.2 2017-12-02 JMS No code changes, just more standard Linux packaging
 -- v2.1.3 2017-12-03 JMS Installer doesn't create ~/.config, Bash does
 -- v2.1.4 2017-12-03 JMS Properly handle initial execution, where both -i and -c are assumed
+-- v2.2   2018-10-20 JMS Refresh versions, move to github
 
-local version = "multi-sync 2.1.4"
+local version = "multi-sync 2.2"
 
 -- These will fail if not found but the alternative isn't much better
 local luasql = require "luasql.sqlite3"
@@ -184,7 +185,7 @@ env = luasql.sqlite3()
 local parser = argparse()
   :name "multi-sync"
   :description "Rule-based script for using rsync or other tool to automate multiple backups"
-  :epilog [[Copyright (c) 2017 Jeff Stone
+  :epilog [[Copyright (c) 2017-2018 Jeff Stone
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -223,7 +224,7 @@ parser:mutex(
     :action(
       function()
         print("\n"..version)
-        print(_VERSION)
+        print("Lua 5.3.5")
         print(lfs._VERSION)
         print(luasql._VERSION)
         local db = env:connect(":memory:")
@@ -232,6 +233,7 @@ parser:mutex(
         cur:close()
         db:close()
         env:close()
+        print("argparse "..argparse.version)
         print("Penlight "..utils._VERSION)
         os.exit(0)
       end
