@@ -5,10 +5,8 @@ BIN_DIR=$HOME/bin
 CONFIG_DIR=$HOME/.config
 LUA=lua-5.3.5
 LFS=luafilesystem-1_7_0_2
-SQLITE3=sqlite-amalgamation-3250200
-LUASQL=luasql-2.3.5
-ARGPARSE=argparse-0.6.0
-PENLIGHT=Penlight-1.5.4
+SQLITE3=sqlite-amalgamation-3250300
+LUASQL=luasql-2.4.0
 
 # Pre-reqs
 #sudo apt install build-essential libreadline-dev libtinfo-dev libtool-bin unzip
@@ -16,7 +14,7 @@ PENLIGHT=Penlight-1.5.4
 # Get source code
 #wget https://www.lua.org/ftp/lua-5.3.5.tar.gz
 #wget https://github.com/keplerproject/luafilesystem/archive/v1_7_0_2.tar.gz
-#wget https://github.com/stevedonovan/Penlight/archive/1.5.4.tar.gz
+#wget https://github.com/stevedonovan/Penlight/archive/1.6.0.tar.gz
 #wget https://github.com/mpeterv/argparse/archive/0.6.0.tar.gz
 #wget https://www.sqlite.org/2018/sqlite-amalgamation-3250200.zip
 #wget https://github.com/keplerproject/luasql/archive/v2.3.5.tar.gz
@@ -79,18 +77,6 @@ if [ ! -f sqlite3.so ]; then
 fi
 cd ../..
 
-# argparse
-if [ ! -d $ARGPARSE ]; then
-  tar xf $ARGPARSE.tar.gz
-fi
-
-# Penlight
-if [ ! -d $PENLIGHT ]; then
-  tar xf $PENLIGHT.tar.gz
-  # Correction (hopefully will be fixed in later versions)
-  sed -i 's#1.5.2#1.5.4#' $PENLIGHT/lua/pl/utils.lua
-fi
-
 # Copying executables that were just built
 [ ! -d $INSTALL_DIR/pl ] && mkdir -p $INSTALL_DIR/pl
 [ ! -d $INSTALL_DIR/luasql ] && mkdir $INSTALL_DIR/luasql
@@ -100,8 +86,8 @@ yes | cp $SQLITE3/sqlite3 $INSTALL_DIR
 yes | cp $LUASQL/src/sqlite3.so $INSTALL_DIR/luasql
 
 # Copying executables as distributed
-yes | cp $ARGPARSE/src/argparse.lua $INSTALL_DIR
-yes | cp -r $PENLIGHT/lua/pl/* $INSTALL_DIR/pl
+yes | cp argparse.lua $INSTALL_DIR
+yes | cp -r pl/* $INSTALL_DIR/pl
 yes | cp linux/multi-sync $INSTALL_DIR
 yes | cp linux/multi-sync-config.lua $INSTALL_DIR
 yes | cp multi-sync.lua $INSTALL_DIR

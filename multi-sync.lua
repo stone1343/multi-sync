@@ -24,8 +24,9 @@
 -- v2.1.3 2017-12-03 JMS Installer doesn't create ~/.config, Bash does
 -- v2.1.4 2017-12-03 JMS Properly handle initial execution, where both -i and -c are assumed
 -- v2.2   2018-10-20 JMS Refresh versions, move to github
+-- v2.2.1 2018-11-25 JMS Refresh versions again
 
-local version = "multi-sync 2.2"
+local version = "multi-sync 2.2.1"
 
 -- These will fail if not found but the alternative isn't much better
 local luasql = require "luasql.sqlite3"
@@ -342,7 +343,7 @@ end
 -- Process rules
 local exitRC, default_cmd, default_list_cmd, default_cmd_syntax = 0, cmd, list_cmd, cmd_syntax
 for i, rule in pairs(rules) do
-  local pauseFlag = 0
+  local pauseFlag = False
   -- Evaluate the rule
   name = rule.name
   if name == "" then name = nil end
@@ -400,7 +401,7 @@ for i, rule in pairs(rules) do
                   print("rc = "..rc)
                   if rc ~= 0 then
                     print(err)
-                    exitRC, pauseFlag = 1, 1
+                    exitRC, pauseFlag = 1, True
                    end
                   if not args.list then executeSQL(db, string.format("insert or replace into sync_history (src, dest, utc, rc) values('%s', '%s', datetime('now'), '%d')", src, dest, rc)) end
                 else
@@ -410,47 +411,47 @@ for i, rule in pairs(rules) do
               else
                 if not args.debug then crlf(); printRule(nil, nil, src, dest) end
                 print("\nRule skipped because src and dest are the same")
-                pauseFlag = 1
+                pauseFlag = True
               end
             else
               if not args.debug then crlf(); printRule(nil, nil, src, dest) end
               print("\nRule skipped because dest does not exist")
               lastSync(db, src, dest)
-              pauseFlag = 1
+              pauseFlag = True
             end
           else
             if not args.debug then crlf(); printRule(nil, nil, src, dest) end
             print("\nRule skipped because src does not exist")
             lastSync(db, src, dest)
-            pauseFlag = 1
+            pauseFlag = True
           end
         else
           -- There was a problem with the rule definition, print everything
           if not args.debug then crlf(); printRule(name, expression, src, dest, cmd, cmd_syntax) end
           print("\nRule skipped because cmd and/or cmd_syntax are nil")
           lastSync(db, src, dest)
-          pauseFlag = 1
+          pauseFlag = True
         end
         -- Since we're in the loud part of the loop, if debug, make sure we pause
-        if args.debug then pauseFlag = 1 end
+        if args.debug then pauseFlag = True end
       else
         if args.debug then
           print("\nRule skipped because of expression")
-          pauseFlag = 1
+          pauseFlag = True
         end
       end
     else
       if args.debug then
         print("\nRule skipped because of name")
-        pauseFlag = 1
+        pauseFlag = True
       end
     end
   else
     if not args.debug then crlf(); printRule(name, expression, src, dest) end
     print("\nRule skipped because src and/or dest are not specified")
-    pauseFlag = 1
+    pauseFlag = True
   end
-  if pauseFlag > 0 then
+  if pauseFlag then
     pause()
   end
 end
