@@ -5,7 +5,7 @@ BIN_DIR=$HOME/bin
 CONFIG_DIR=$HOME/.config
 LUA=lua-5.3.5
 LFS=luafilesystem-1_7_0_2
-SQLITE3=sqlite-amalgamation-3250300
+SQLITE3=sqlite-amalgamation-3260000
 LUASQL=luasql-2.4.0
 
 # Pre-reqs

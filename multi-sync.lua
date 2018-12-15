@@ -25,8 +25,9 @@
 -- v2.1.4 2017-12-03 JMS Properly handle initial execution, where both -i and -c are assumed
 -- v2.2   2018-10-20 JMS Refresh versions, move to github
 -- v2.2.1 2018-11-25 JMS Refresh versions again
+-- v2.2.2 2018-12-15 JMS Update SQLite to v3.26 ( https://www.zdnet.com/article/sqlite-bug-impacts-thousands-of-apps-including-all-chromium-based-browsers/ )
 
-local version = "multi-sync 2.2.1"
+local version = "multi-sync 2.2.2"
 
 -- These will fail if not found but the alternative isn't much better
 local luasql = require "luasql.sqlite3"
