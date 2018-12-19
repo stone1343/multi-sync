@@ -21,7 +21,7 @@
 
 -- Defaults, if these are not specified here, must be specified for every rule
 cmd = [[rsync -qrptgoD --delete-before --exclude=".*" --exclude=lost+found]]
-list_cmd = [[rsync -nrptgoD --delete-before --exclude=".*" --exclude=lost+found]]
+list_cmd = [[rsync -nvrptgoD --delete-before --exclude=".*" --exclude=lost+found]]
 cmd_syntax = [[cmd.." "..src.." "..dest]]
 
 rules = {
