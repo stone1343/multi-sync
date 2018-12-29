@@ -26,11 +26,13 @@
 -- v2.2   2018-10-20 JMS Refresh versions, move to github
 -- v2.2.1 2018-11-25 JMS Refresh versions again
 -- v2.2.2 2018-12-15 JMS Update SQLite to v3.26 ( https://www.zdnet.com/article/sqlite-bug-impacts-thousands-of-apps-including-all-chromium-based-browsers/ )
+-- v2.3   2019-01-01 JMS Add pre and post routines, allow an optional database argument to --print-history
 
-local version = "multi-sync 2.2.2"
+local version = "multi-sync 2.3"
 
 -- These will fail if not found but the alternative isn't much better
 local luasql = require "luasql.sqlite3"
+local lfs = require "lfs"
 local file = require "pl.file"
 local path = require "pl.path"
 local tablex = require "pl.tablex"
@@ -171,6 +173,14 @@ function printHistory(db, rowid)
   return n
 end
 
+function copyFile(src, dest)
+  if path.isdir(dest) then
+    file.copy(src, dest)
+  else
+    print("copyFile requires dest to be an existing directory")
+  end
+end
+
 --[[
     Main begins here
 --]]
@@ -216,11 +226,12 @@ parser:mutex(
     :target "configure",
   parser:flag "-p" "--print-history"
     :description "Print sync history"
-    :target "printHistory",
+    :target "printHistory"
+    :args("?"),
   parser:option "-f" "--forget"
     :description "Forget row(s) of sync history"
-    :args("+")
-    :target "forget",
+    :target "forget"
+    :args("+"),
   parser:flag "-v" "--version"
     :description "Output version information and exit"
     :action(
@@ -250,8 +261,8 @@ local args = parser:parse()
 local filePath, fileName, fileExt
 filePath, fileName = path.splitpath(arg[0])
 fileName, fileExt = path.splitext(fileName)
-local dbFile = path.join(appData, fileName..".sqlite3")
-local config = path.join(appData, fileName.."-config.lua")
+dbFile = path.join(appData, fileName..".sqlite3")
+config = path.join(appData, fileName.."-config.lua")
 local db
 
 if args.debug then
@@ -306,15 +317,21 @@ if args.configure then
   os.exit(0)
 end
 
--- Connect to the database
-db = env:connect(dbFile)
-
 -- Process -p
 if args.printHistory then
+  if args.printHistory[1] and isfile(args.printHistory[1]) then
+    print("\nPrinting sync history from "..args.printHistory[1])
+    db = env:connect(args.printHistory[1])
+  else
+    db = env:connect(dbFile)
+  end
   printHistory(db)
   db:close()
   os.exit(0)
 end
+
+-- Connect to the database
+db = env:connect(dbFile)
 
 -- Process -f
 if args.forget then
@@ -339,6 +356,15 @@ if not rules then
   print("Syntax error in config, rules must be specified")
   db:close()
   os.exit(2)
+end
+
+if pre then
+  local func, err = load(replaceEnvironmentVariables(pre))
+  if func then
+    pcall(func)
+  else
+    print("\nCompilation error in pre:", err)
+  end
 end
 
 -- Process rules
@@ -454,6 +480,15 @@ for i, rule in pairs(rules) do
   end
   if pauseFlag then
     pause()
+  end
+end
+
+if post then
+  local func, err = load(replaceEnvironmentVariables(post))
+  if func then
+    pcall(func)
+  else
+    print("\nCompilation error in post:", err)
   end
 end
 

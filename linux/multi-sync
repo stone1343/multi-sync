@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-INSTALL_DIR=$HOME/.multi-sync
+# From https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
+INSTALL_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 lua=$INSTALL_DIR/lua
 ms=$INSTALL_DIR/multi-sync.lua
 
@@ -9,22 +10,14 @@ export MS_USERNAME=$USER
 export MS_APPDATA="$HOME/.config"
 export MS_EDITOR=nano
 
-export LUA_PATH="$INSTALL_DIR/?.lua;;"
-export LUA_CPATH="$INSTALL_DIR/?.so;;"
+export LUA_PATH="$INSTALL_DIR/?.lua;"
+export LUA_CPATH="$INSTALL_DIR/?.so;"
 
-# Find Lua
-if [[ ! -f "$lua" ]]
-then
-  echo "Lua not found"
+# If Lua and multi-sync.lua are both found, execute
+if [[ -f "$lua" && -f "$ms" ]]; then
+  $lua $ms "$@"
+  exit $?
+else
+  echo "Lua and/or multi-sync.lua not found in $INSTALL_DIR"
   exit 1
 fi
-
-# Find multi-sync.lua
-if [[ -f "$ms" ]]
-then
-  $lua $ms "$@"
-else
-  echo $ms not found
-fi
-
-exit $?
