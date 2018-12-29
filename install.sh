@@ -93,13 +93,10 @@ yes | cp linux/multi-sync-config.lua $INSTALL_DIR
 yes | cp multi-sync.lua $INSTALL_DIR
 chmod +x $INSTALL_DIR/multi-sync
 
-# Now install multi-sync in ~/bin as a symbolic link
-[ ! -d $BIN_DIR ] && mkdir -p $BIN_DIR
-[ -f $BIN_DIR/multi-sync ] && rm $BIN_DIR/multi-sync
-ln -s $INSTALL_DIR/multi-sync $BIN_DIR/multi-sync
-# If lua and sqlite3 don't exist in ~/bin, make symbolic links for them too
-[ ! -f $BIN_DIR/lua ] && ln -s $INSTALL_DIR/lua $BIN_DIR/lua
-[ ! -f $BIN_DIR/sqlite3 ] && ln -s $INSTALL_DIR/sqlite3 $BIN_DIR/sqlite3
-
-# Finally, create the .config directory if it doesn't exist
+# Create the .config directory if it doesn't exist
 [ ! -d $CONFIG_DIR ] && mkdir $CONFIG_DIR
+
+# Finally install multi-sync in ~/bin if it exists
+if [ -d $BIN_DIR ]; then
+  yes | cp linux/bin/multi-sync $BIN_DIR
+fi
