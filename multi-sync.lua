@@ -177,7 +177,7 @@ function copyFile(src, dest)
   if path.isdir(dest) then
     file.copy(src, dest)
   else
-    print("copyFile requires dest to be an existing directory")
+    print("\ncopyFile requires dest to be an existing directory")
   end
 end
 
@@ -197,7 +197,8 @@ env = luasql.sqlite3()
 local parser = argparse()
   :name "multi-sync"
   :description "Rule-based script for using rsync or other tool to automate multiple backups"
-  :epilog [[Copyright (c) 2017-2018 Jeff Stone
+  -- https://opensource.org/licenses/MIT
+  :epilog [[Copyright (c) 2018-2019 Jeff Stone
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -214,9 +215,6 @@ parser:flag "-n" "--dry-run"
 parser:flag "-l" "--list"
   :description "List files which would be copied"
   :target "list"
-parser:flag "-i" "--initialize"
-  :description "Initialize the database"
-  :target "initialize"
 parser:flag "-m" "--mkdir"
   :description "If dest directory does not exist, attempt to create it"
   :target "mkdir"
@@ -224,6 +222,9 @@ parser:mutex(
   parser:flag "-c" "--configure"
     :description "Configure rules"
     :target "configure",
+  parser:flag "-i" "--initialize"
+    :description "Initialize the database"
+    :target "initialize",
   parser:flag "-p" "--print-history"
     :description "Print sync history"
     :target "printHistory"
@@ -275,9 +276,44 @@ if args.debug then
   print(string.format(formatString, "config", config))
 end
 
+-- Process -c (assumed first time)
+if not path.exists(config) then
+  file.copy(path.join(filePath, fileName.."-config.lua"), config)
+  args.configure = true
+end
+if args.configure then
+  if path.isfile(config) then
+    os.execute(editor.." "..config)
+  end
+  os.exit(0)
+end
+
+-- Process -p
+if args.printHistory then
+  if args.printHistory[1] then
+    local dbArgument = path.join(args.printHistory[1], fileName..".sqlite3")
+    if isfile(dbArgument) then
+      print("\nPrinting sync history from "..dbArgument)
+      dbFile = dbArgument
+    else
+      print("\nprint-history argument must a directory containing "..fileName..".sqlite3")
+      dbFile = nil
+    end
+  end
+  if dbFile then
+    db = env:connect(dbFile)
+    printHistory(db)
+    db:close()
+  end
+  os.exit(0)
+end
+
 -- Process -i (assumed first time)
-if args.initialize or not path.exists(dbFile) then
-  db = env:connect(dbFile)
+if not not path.exists(dbFile) then
+  args.initialize = true
+end
+db = env:connect(dbFile)
+if args.initialize then
   -- This one can't use executeSQL because it is guaranteed to fail the first time since the table doesn't exist
   db:execute("drop table sync_history")
   -- Windows file systems aren't case-sensitive so the database that keeps track shouldn't be either, use "collate nocase" for src and dest
@@ -302,36 +338,7 @@ if args.initialize or not path.exists(dbFile) then
       )
     ]])
   end
-  db:close()
 end
-
--- Process -c (assumed first time)
-if not path.exists(config) then
-  file.copy(path.join(filePath, fileName.."-config.lua"), config)
-  args.configure = true
-end
-if args.configure then
-  if path.isfile(config) then
-    os.execute(editor.." "..config)
-  end
-  os.exit(0)
-end
-
--- Process -p
-if args.printHistory then
-  if args.printHistory[1] and isfile(args.printHistory[1]) then
-    print("\nPrinting sync history from "..args.printHistory[1])
-    db = env:connect(args.printHistory[1])
-  else
-    db = env:connect(dbFile)
-  end
-  printHistory(db)
-  db:close()
-  os.exit(0)
-end
-
--- Connect to the database
-db = env:connect(dbFile)
 
 -- Process -f
 if args.forget then
