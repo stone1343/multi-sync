@@ -309,7 +309,7 @@ if args.printHistory then
 end
 
 -- Process -i (assumed first time)
-if not not path.exists(dbFile) then
+if not path.exists(dbFile) then
   args.initialize = true
 end
 db = env:connect(dbFile)
