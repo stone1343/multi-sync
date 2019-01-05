@@ -3,9 +3,11 @@
 INSTALL_DIR=$HOME/.multi-sync
 BIN_DIR=$HOME/bin
 CONFIG_DIR=$HOME/.config
+# Note lua.h is patched below to include release
 LUA=lua-5.3.5
 LFS=luafilesystem-1_7_0_2
 SQLITE3=sqlite-amalgamation-3260000
+# Note luasql.c is patched below to correct the version
 LUASQL=luasql-2.4.0
 
 # Pre-reqs
@@ -23,10 +25,15 @@ LUASQL=luasql-2.4.0
 #git clone ssh://stone1343@git.code.sf.net/p/multi-sync/code multi-sync
 #cd multi-sync
 
+# Patch argparse to display version "the Lua way" see https://github.com/mpeterv/argparse/issues/21
+sed -i 's/argparse.version/argparse._VERSION/g' argparse.lua
+
 if [ ! -d $LUA ]; then
   tar xf $LUA.tar.gz
 fi
 cd $LUA
+# Patch lua.h to include release
+sed -i 's/#define LUA_VERSION\t"Lua " LUA_VERSION_MAJOR "." LUA_VERSION_MINOR/#define LUA_VERSION\t"Lua " LUA_VERSION_MAJOR "." LUA_VERSION_MINOR "." LUA_VERSION_RELEASE/g' src/lua.h
 make linux
 cd ..
 if [ ! -f $LUA/src/lua ]; then
@@ -66,6 +73,8 @@ if [ ! -d $LUASQL ]; then
   tar xf $LUASQL.tar.gz
 fi
 cd $LUASQL/src
+# Patch luasql.c to correct the version, see https://github.com/keplerproject/luasql/issues/102
+sed -i 's/LuaSQL 2.3.5/LuaSQL 2.4.0/g' luasql.c
 if [ ! -f sqlite3.h ]; then
   cp ../../$SQLITE3/sqlite3.h .
 fi
