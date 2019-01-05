@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 INSTALL_DIR=$HOME/.multi-sync
-BIN_DIR=$HOME/bin
 CONFIG_DIR=$HOME/.config
+BIN_DIR=$HOME/bin
+
 # Note lua.h is patched below to include release
 LUA=lua-5.3.5
 LFS=luafilesystem-1_7_0_2
