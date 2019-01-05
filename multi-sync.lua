@@ -28,8 +28,9 @@
 -- v2.2.2 2018-12-15 JMS Update SQLite to v3.26 ( https://www.zdnet.com/article/sqlite-bug-impacts-thousands-of-apps-including-all-chromium-based-browsers/ )
 -- v2.3   2019-01-01 JMS Add pre and post routines, allow an optional database argument to --print-history
 --        2019-01-05 JMS Output Lua's _VERSION, which has been patched to include release, e.g. 5.3.5, without hardcoding it here
+--                       If I'm gonna nag argparse about using _VERSION, I should too ;-)
 
-local version = "multi-sync 2.3"
+local _VERSION = "multi-sync 2.3"
 
 -- These will fail if not found but the alternative isn't much better
 local luasql = require "luasql.sqlite3"
@@ -238,7 +239,7 @@ parser:mutex(
     :description "Output version information and exit"
     :action(
       function()
-        print("\n"..version)
+        print("\n".._VERSION)
         print(_VERSION)
         print(lfs._VERSION)
         print(luasql._VERSION)
