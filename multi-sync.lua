@@ -27,7 +27,7 @@
 -- v2.2.1 2018-11-25 JMS Refresh versions again
 -- v2.2.2 2018-12-15 JMS Update SQLite to v3.26 ( https://www.zdnet.com/article/sqlite-bug-impacts-thousands-of-apps-including-all-chromium-based-browsers/ )
 -- v2.3   2019-01-01 JMS Add pre and post routines, allow an optional database argument to --print-history
---        2019-01-05 JMS Patch to output Lua release, e.g. 5.3.5, without hardcoding it here
+--        2019-01-05 JMS Output Lua's _VERSION, which has been patched to include release, e.g. 5.3.5, without hardcoding it here
 
 local version = "multi-sync 2.3"
 
@@ -248,7 +248,7 @@ parser:mutex(
         cur:close()
         db:close()
         env:close()
-        print("argparse "..argparse._VERSION)
+        print("argparse "..argparse.version)
         print("Penlight "..utils._VERSION)
         os.exit(0)
       end

@@ -14,24 +14,9 @@ LUASQL=luasql-2.4.0
 # Pre-reqs
 #sudo apt install build-essential libreadline-dev libtinfo-dev libtool-bin unzip
 
-# Get source code
-#wget https://www.lua.org/ftp/lua-5.3.5.tar.gz
-#wget https://github.com/keplerproject/luafilesystem/archive/v1_7_0_2.tar.gz
-#wget https://github.com/stevedonovan/Penlight/archive/1.6.0.tar.gz
-#wget https://github.com/mpeterv/argparse/archive/0.6.0.tar.gz
-#wget https://www.sqlite.org/2018/sqlite-amalgamation-3250200.zip
-#wget https://github.com/keplerproject/luasql/archive/v2.3.5.tar.gz
-
-# Do manually
-#git clone ssh://stone1343@git.code.sf.net/p/multi-sync/code multi-sync
-#cd multi-sync
-
-# Patch argparse to display version "the Lua way" see https://github.com/mpeterv/argparse/issues/21
-sed -i 's/argparse.version/argparse._VERSION/g' argparse.lua
-
 if [ ! -d $LUA ]; then
   tar xf $LUA.tar.gz
-  # Patch lua.h to include release
+  # Patch lua.h to include release, this can only be done once since LUA_VERSION_RELEASE is appended
   sed -i 's/#define LUA_VERSION\t"Lua " LUA_VERSION_MAJOR "." LUA_VERSION_MINOR/#define LUA_VERSION\t"Lua " LUA_VERSION_MAJOR "." LUA_VERSION_MINOR "." LUA_VERSION_RELEASE/g' $LUA/src/lua.h
 fi
 cd $LUA
