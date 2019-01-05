@@ -9,6 +9,10 @@ set MS_COMPUTERNAME=%COMPUTERNAME%
 set MS_USERNAME=%USERNAME%
 set MS_APPDATA=%LOCALAPPDATA%
 set MS_EDITOR=notepad
+
+set LUA_PATH=./?.lua
+set LUA_CPATH=./?.dll
+
 lua %~n0.lua %*
 set rc=%errorlevel%
 popd
