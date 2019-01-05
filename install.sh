@@ -31,10 +31,10 @@ sed -i 's/argparse.version/argparse._VERSION/g' argparse.lua
 
 if [ ! -d $LUA ]; then
   tar xf $LUA.tar.gz
+  # Patch lua.h to include release
+  sed -i 's/#define LUA_VERSION\t"Lua " LUA_VERSION_MAJOR "." LUA_VERSION_MINOR/#define LUA_VERSION\t"Lua " LUA_VERSION_MAJOR "." LUA_VERSION_MINOR "." LUA_VERSION_RELEASE/g' $LUA/src/lua.h
 fi
 cd $LUA
-# Patch lua.h to include release
-sed -i 's/#define LUA_VERSION\t"Lua " LUA_VERSION_MAJOR "." LUA_VERSION_MINOR/#define LUA_VERSION\t"Lua " LUA_VERSION_MAJOR "." LUA_VERSION_MINOR "." LUA_VERSION_RELEASE/g' src/lua.h
 make linux
 cd ..
 if [ ! -f $LUA/src/lua ]; then
@@ -72,10 +72,10 @@ fi
 
 if [ ! -d $LUASQL ]; then
   tar xf $LUASQL.tar.gz
+  # Patch luasql.c to correct the version, see https://github.com/keplerproject/luasql/issues/102
+  sed -i 's/LuaSQL 2.3.5/LuaSQL 2.4.0/g' $LUASQL/src/luasql.c
 fi
 cd $LUASQL/src
-# Patch luasql.c to correct the version, see https://github.com/keplerproject/luasql/issues/102
-sed -i 's/LuaSQL 2.3.5/LuaSQL 2.4.0/g' luasql.c
 if [ ! -f sqlite3.h ]; then
   cp ../../$SQLITE3/sqlite3.h .
 fi
