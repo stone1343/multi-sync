@@ -1,6 +1,6 @@
 --[=[
 
- multi-sync config file
+ multi-sync-config.lua (v2.4 2019-02-03)
 
  Each rule must define:
   src - a directory or a file
@@ -28,32 +28,38 @@ rules = {
  -- This is a file
  {
   name = "multi-sync-config",
-  expression = [[isdir('E:\')]],
+  expression = [[isdir('E:\backup')]],
   src = [[C:\Users\{username}\AppData\Local\multi-sync-config.lua]],
   dest = [[E:\backup\{computername}\{username}\AppData\Local]],
  },
  {
   name = "documents",
-  expression = [[isdir('E:\')]],
+  expression = [[isdir('E:\backup')]],
   src = [[C:\Users\{username}\Documents]],
   dest = [[E:\backup\{computername}\{username}\Documents]],
  },
  {
   name = "music",
-  expression = [[isdir('E:\')]],
+  expression = [[isdir('E:\backup')]],
   src = [[C:\Users\{username}\Music]],
   dest = [[E:\backup\{computername}\{username}\Music]],
  },
  {
   name = "pictures",
-  expression = [[isdir('E:\')]],
+  expression = [[isdir('E:\backup')]],
   src = [[C:\Users\{username}\Pictures]],
   dest = [[E:\backup\{computername}\{username}\Pictures]],
  },
  {
   name = "videos",
-  expression = [[isdir('E:\')]],
+  expression = [[isdir('E:\backup')]],
   src = [[C:\Users\{username}\Videos]],
   dest = [[E:\backup\{computername}\{username}\Videos]],
  },
 }
+
+post = [[
+  if isdir('E:\backup\{computername}\{username}\AppData\Local') then
+    copyFile(dbFile, 'E:\backup\{computername}\{username}\AppData\Local')
+  end
+]]

@@ -1,6 +1,6 @@
 --[=[
 
- multi-sync config file
+ multi-sync-config.lua (v2.4 2019-02-03)
 
  Each rule must define:
   src - a directory or a file
@@ -39,3 +39,9 @@ rules = {
   dest = "/media/{username}/backup/{computername}/home/{username}/"
  }
 }
+
+post = [[
+  if isdir('/media/{username}/backup/{computername}/home/{username}/.config/') then
+    copyFile(dbFile, '/media/{username}/backup/{computername}/home/{username}/.config/')
+  end
+]]

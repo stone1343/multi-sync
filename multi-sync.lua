@@ -28,18 +28,19 @@
 -- v2.2.2 2018-12-15 JMS Update SQLite to v3.26 ( https://www.zdnet.com/article/sqlite-bug-impacts-thousands-of-apps-including-all-chromium-based-browsers/ )
 -- v2.3   2019-01-01 JMS Add pre and post routines, allow an optional database argument to --print-history
 --        2019-01-05 JMS Output Lua's _VERSION, which has been patched to include release, e.g. 5.3.5, without hardcoding it here
+-- v2.4   2019-02-03 JMS Change packaging, Linux now relies on libraries installed by LuaRocks and install in /usr/local/bin
 
 -- Can't use _VERSION since that's used by Lua
-local version = "multi-sync 2.3"
+local version = "multi-sync 2.4"
 
 -- These will fail if not found but the alternative isn't much better
-local luasql = require "luasql.sqlite3"
 local lfs = require "lfs"
+local luasql = require "luasql.sqlite3"
+local argparse = require "argparse"
 local file = require "pl.file"
 local path = require "pl.path"
 local tablex = require "pl.tablex"
 local utils = require "pl.utils"
-local argparse = require "argparse"
 
 function isdir(filespec)
   return (path.attrib(filespec, "mode") == "directory")
@@ -188,10 +189,10 @@ end
 --]]
 
 -- This basically forces user to run via the caller (.bat or Bash)
-computerName, userName = os.getenv("MS_COMPUTERNAME"), os.getenv("MS_USERNAME")
-local appData, editor = os.getenv("MS_APPDATA"), os.getenv("MS_EDITOR")
-if (not computerName) or (not userName) or (not appData) or (not editor) then
-  print("Set environment variables MS_COMPUTERNAME, MS_USERNAME, MS_APPDATA and MS_EDITOR prior to calling Lua")
+computerName, userName = os.getenv("COMPUTERNAME"), os.getenv("USERNAME")
+local configDir, editor = os.getenv("CONFIGDIR"), os.getenv("EDITOR")
+if (not computerName) or (not userName) or (not configDir) or (not editor) then
+  print("Set environment variables COMPUTERNAME, USERNAME, CONFIGDIR and EDITOR prior to calling Lua")
   os.exit(2)
 end
 
@@ -265,21 +266,24 @@ local args = parser:parse()
 local filePath, fileName, fileExt
 filePath, fileName = path.splitpath(arg[0])
 fileName, fileExt = path.splitext(fileName)
-dbFile = path.join(appData, fileName..".sqlite3")
-config = path.join(appData, fileName.."-config.lua")
+dbFile = path.join(configDir, fileName..".sqlite3")
+config = path.join(configDir, fileName.."-config.lua")
 local db
 
 if args.debug then
   local formatString = "%-12s  %s"
   print(string.format("\n"..formatString, "computerName", computerName))
   print(string.format(formatString, "userName", userName))
-  print(string.format(formatString, "appData", appData))
+  print(string.format(formatString, "configDir", configDir))
   print(string.format(formatString, "editor", editor))
   print(string.format(formatString, "dbFile", dbFile))
   print(string.format(formatString, "config", config))
 end
 
 -- Process -c (assumed first time)
+if not path.exist(configDir) then
+  lfs.mkdir(configDir)
+end
 if not path.exists(config) then
   file.copy(path.join(filePath, fileName.."-config.lua"), config)
   args.configure = true

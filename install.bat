@@ -1,17 +1,22 @@
 @echo off
+rem install.bat v2.4 2019-02-03
 setlocal
 
 if "%1"=="" (
-  echo %~n0 dest
-  goto :eof
+  goto :help
 )
-if not exist %1\ (
-  mkdir %1
+if not exist "%1" (
+  goto :help
 )
-xcopy /s /y windows\* %1
-xcopy /y argparse.lua %1
-if not exist %1\pl\ (
-  mkdir %1\pl
+if not exist "%~1\multi-sync.bat" (
+  xcopy /s /y windows\* "%1"
+) else (
+  copy /y windows\multi-sync.bat "%~1"
+  copy /y windows\multi-sync-config.lua "%~1"
+  copy /y multi-sync.lua "%~1"
 )
-xcopy /s /y pl\* %1\pl
-xcopy /y multi-sync.lua %1
+goto :eof
+
+:help
+echo %~n0 dest
+echo  dest must exist
