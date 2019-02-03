@@ -281,7 +281,7 @@ if args.debug then
 end
 
 -- Process -c (assumed first time)
-if not path.exist(configDir) then
+if not path.exists(configDir) then
   lfs.mkdir(configDir)
 end
 if not path.exists(config) then
