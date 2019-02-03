@@ -13,8 +13,8 @@ if not exist "%~1\multi-sync.bat" (
 ) else (
   copy /y windows\multi-sync.bat "%~1"
   copy /y windows\multi-sync-config.lua "%~1"
-  copy /y multi-sync.lua "%~1"
 )
+copy /y multi-sync.lua "%~1"
 goto :eof
 
 :help
