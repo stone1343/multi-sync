@@ -22,8 +22,8 @@ fi
 INSTALL_DIR=/usr/local/bin
 
 install -m 755 linux/multi-sync $INSTALL_DIR
-install -m 755 linux/multi-sync-config.lua $INSTALL_DIR
-install -m 755 multi-sync.lua $INSTALL_DIR
+install -m 644 linux/multi-sync-config.lua $INSTALL_DIR
+install -m 644 multi-sync.lua $INSTALL_DIR
 
 if [[ -f $INSTALL_DIR/multi-sync && -f $INSTALL_DIR/multi-sync.lua && -f $INSTALL_DIR/multi-sync-config.lua ]]; then
   echo "multi-sync installed"
