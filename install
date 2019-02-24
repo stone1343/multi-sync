@@ -1,5 +1,5 @@
-#!/usr/bin/env bash
-# install v2.4 2019-02-03
+#!/usr/bin/bash
+# install v2.4 2019-02-24
 
 if [ $EUID -ne 0 ]; then
   echo "This must be run as root" >&2
