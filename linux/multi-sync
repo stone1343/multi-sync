@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 # multi-sync v2.4 2019-02-24
 
 # From https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
