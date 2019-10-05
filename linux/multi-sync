@@ -1,5 +1,5 @@
 #!/bin/bash
-# multi-sync v2.4 2019-02-24
+# multi-sync v2.5 2019-10-05
 
 # From https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
 INSTALL_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -10,6 +10,10 @@ export COMPUTERNAME=$(hostname)
 export USERNAME=$USER
 export CONFIGDIR="$HOME/.config"
 export EDITOR=nano
+
+[ ! -d $CONFIGDIR ] && mkdir $CONFIGDIR
+[ ! -f $CONFIGDIR/multi-sync.sqlite3 ] && cp $INSTALL_DIR/multi-sync.sqlite3 $CONFIGDIR
+[ ! -f $CONFIGDIR/multi-sync-config.lua ] && cp $INSTALL_DIR/multi-sync-config.lua $CONFIGDIR
 
 # If Lua and multi-sync.lua are both found, execute
 if [[ -f "$lua" && -f "$ms" ]]; then

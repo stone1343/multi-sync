@@ -29,9 +29,10 @@
 -- v2.3   2019-01-01 JMS Add pre and post routines, allow an optional database argument to --print-history
 --        2019-01-05 JMS Output Lua's _VERSION, which has been patched to include release, e.g. 5.3.5, without hardcoding it here
 -- v2.4   2019-02-03 JMS Change packaging, Linux now relies on libraries installed by LuaRocks and install in /usr/local/bin
+-- v2.5   2019-10-05 JMS Calling script responsible for ensuring both multi-sync.sqlite3 and multi-sync-config.lua exist
 
 -- Can't use _VERSION since that's used by Lua
-local version = "multi-sync 2.4"
+local version = "multi-sync 2.5"
 
 -- These will fail if not found but the alternative isn't much better
 local lfs = require "lfs"
@@ -280,14 +281,7 @@ if args.debug then
   print(string.format(formatString, "config", config))
 end
 
--- Process -c (assumed first time)
-if not path.exists(configDir) then
-  lfs.mkdir(configDir)
-end
-if not path.exists(config) then
-  file.copy(path.join(filePath, fileName.."-config.lua"), config)
-  args.configure = true
-end
+-- Process -c
 if args.configure then
   if path.isfile(config) then
     os.execute(editor.." "..config)
@@ -315,10 +309,7 @@ if args.printHistory then
   os.exit(0)
 end
 
--- Process -i (assumed first time)
-if not path.exists(dbFile) then
-  args.initialize = true
-end
+-- Process -i
 db = env:connect(dbFile)
 if args.initialize then
   -- This one can't use executeSQL because it is guaranteed to fail the first time since the table doesn't exist
