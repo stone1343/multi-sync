@@ -1,6 +1,6 @@
 --[=[
 
- multi-sync-config.lua (v2.5 2019-10-05)
+ multi-sync-config.lua (v3.0 2020-08-05)
 
  Each rule must define:
   src - a directory or a file
@@ -19,6 +19,8 @@
 
 ]=]
 
+text_editor = "notepad"
+
 -- Defaults, if these are not specified here, must be specified for every rule
 cmd = "sfk sync -mirror -wipe -nohidden -yes"
 list_cmd = "sfk sync -mirror -wipe -nohidden"
@@ -28,31 +30,26 @@ rules = {
  -- This is a file
  {
   name = "multi-sync-config",
-  expression = [[isdir('E:\backup')]],
   src = [[C:\Users\{username}\AppData\Local\multi-sync-config.lua]],
   dest = [[E:\backup\{computername}\{username}\AppData\Local]],
  },
  {
   name = "documents",
-  expression = [[isdir('E:\backup')]],
   src = [[C:\Users\{username}\Documents]],
   dest = [[E:\backup\{computername}\{username}\Documents]],
  },
  {
   name = "music",
-  expression = [[isdir('E:\backup')]],
   src = [[C:\Users\{username}\Music]],
   dest = [[E:\backup\{computername}\{username}\Music]],
  },
  {
   name = "pictures",
-  expression = [[isdir('E:\backup')]],
   src = [[C:\Users\{username}\Pictures]],
   dest = [[E:\backup\{computername}\{username}\Pictures]],
  },
  {
   name = "videos",
-  expression = [[isdir('E:\backup')]],
   src = [[C:\Users\{username}\Videos]],
   dest = [[E:\backup\{computername}\{username}\Videos]],
  },

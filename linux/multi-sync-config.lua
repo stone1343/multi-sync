@@ -1,6 +1,6 @@
 --[=[
 
- multi-sync-config.lua (v2.5 2019-10-05)
+ multi-sync-config.lua (v3.0 2020-08-05)
 
  Each rule must define:
   src - a directory or a file
@@ -19,22 +19,22 @@
 
 ]=]
 
+textEditor = "nano"
+
 -- Defaults, if these are not specified here, must be specified for every rule
-cmd = [[rsync -qrptgoD --delete-before --exclude=".*" --exclude=lost+found]]
-list_cmd = [[rsync -nvrptgoD --delete-before --exclude=".*" --exclude=lost+found]]
-cmd_syntax = [[cmd.." "..src.." "..dest]]
+cmd = [[rsync -qa --delete-before --exclude=lost+found --exclude='.*']]
+listCmd = [[rsync -nva --delete-before --exclude=lost+found --exclude='.*']]
+cmdSyntax = [[cmd.." "..src.." "..dest]]
 
 rules = {
  -- This is a file
  {
   name = "multi-sync-config",
-  expression = "isdir('/media/{username}/backup/')",
   src = "/home/{username}/.config/multi-sync-config.lua",
   dest = "/media/{username}/backup/{computername}/home/{username}/.config/",
  },
  {
   name = "home",
-  expression = "isdir('/media/{username}/backup/')",
   src = "/home/{username}/",
   dest = "/media/{username}/backup/{computername}/home/{username}/"
  }
