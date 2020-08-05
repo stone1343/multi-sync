@@ -9,9 +9,9 @@
  And optionally:
   name - rule name, does not need to be unique
   expression - evaluated as a boolean, so anything other than false and nil is true. If false, the rule will be skipped
-  cmd
-  list_cmd
-  cmd_syntax
+  syncCmd
+  listCmd
+  cmdSyntax
 
  In expression, src and dest, {computername} and {username} will be replaced with the actual computername and username
 
@@ -19,12 +19,12 @@
 
 ]=]
 
-text_editor = "notepad"
+textEditor = "notepad"
 
 -- Defaults, if these are not specified here, must be specified for every rule
-cmd = "sfk sync -mirror -wipe -nohidden -yes"
-list_cmd = "sfk sync -mirror -wipe -nohidden"
-cmd_syntax = [[cmd.." "..src.." "..dest]]
+syncCmd = "sfk sync -mirror -wipe -nohidden -yes"
+listCmd = "sfk sync -mirror -wipe -nohidden"
+cmdSyntax = [[cmd.." "..src.." "..dest]]
 
 rules = {
  -- This is a file
@@ -56,7 +56,7 @@ rules = {
 }
 
 post = [[
-  if isdir('E:\backup\{computername}\{username}\AppData\Local') then
+  if isDir('E:\backup\{computername}\{username}\AppData\Local') then
     copyFile(dbFile, 'E:\backup\{computername}\{username}\AppData\Local')
   end
 ]]

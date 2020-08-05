@@ -9,9 +9,9 @@
  And optionally:
   name - rule name, does not need to be unique
   expression - evaluated as a boolean, so anything other than false and nil is true. If false, the rule will be skipped
-  cmd
-  list_cmd
-  cmd_syntax
+  syncCmd
+  listCmd
+  cmdSyntax
 
  In expression, src and dest, {computername} and {username} will be replaced with the actual computername and username
 
@@ -22,7 +22,7 @@
 textEditor = "nano"
 
 -- Defaults, if these are not specified here, must be specified for every rule
-cmd = [[rsync -qa --delete-before --exclude=lost+found --exclude='.*']]
+syncCmd = [[rsync -qa --delete-before --exclude=lost+found --exclude='.*']]
 listCmd = [[rsync -nva --delete-before --exclude=lost+found --exclude='.*']]
 cmdSyntax = [[cmd.." "..src.." "..dest]]
 
@@ -41,7 +41,7 @@ rules = {
 }
 
 post = [[
-  if isdir('/media/{username}/backup/{computername}/home/{username}/.config/') then
+  if isDir('/media/{username}/backup/{computername}/home/{username}/.config/') then
     copyFile(dbFile, '/media/{username}/backup/{computername}/home/{username}/.config/')
   end
 ]]

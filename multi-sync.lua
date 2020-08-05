@@ -364,7 +364,7 @@ for i, rule in pairs(rules) do
   if args.list then
     cmd = rule.listCmd and rule.listCmd or listCmd
   else
-    cmd = rule.cmd and rule.cmd or cmd
+    cmd = rule.syncCmd and rule.syncCmd or syncCmd
   end
   if cmd == "" then cmd = nil end
   cmdSyntax = rule.cmdSyntax and rule.cmdSyntax or cmdSyntax
