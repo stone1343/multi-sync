@@ -1,5 +1,0 @@
- - evaluate actual_cmd before checking expression
- - move -p so can ensure dbFile exists
- - -i should delete dbFile (make it stronger)
- - include empty multi-sync.sqlite3 (Windows and Linux)
- - on startup, if not exist .config, mkdir .config, if not exist sqlite3 cp sqlite3
