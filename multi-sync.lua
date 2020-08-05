@@ -392,8 +392,10 @@ for i, rule in pairs(rules) do
                   local handler = io.popen(actualCmd)
                   local stdout = handler:read("*a")
                   local dummy, err, rc = handler:close()
-                  if args.quiet then printRule(name, expression, src, dest, cmd, cmdSyntax, actualCmd) end
-                  print("\n"..stdout)
+                  if string.len(stdout) ~= 0 or rc ~= 0 then
+                    if args.quiet then printRule(nil, nil, src, dest, nil, nil, actualCmd) end
+                  end
+                  if string.len(stdout) ~= 0 then print("\n"..stdout) end
                   if rc ~= 0 then
                     print("rc = "..rc)
                     print(err)
