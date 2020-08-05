@@ -275,6 +275,7 @@ end
 
 -- Process -f
 if args.forget then
+  db = env:connect(dbFile)
   for i = 1, tablex.size(args.forget) do
     local f = tonumber(args.forget[i])
     if f then
@@ -290,8 +291,24 @@ if args.forget then
   os.exit(0)
 end
 
--- Process -i
+-- Process configFile
+myDofile(configFile) -- Good possibility of a syntax error in configFile, so handle it more gracefully than Lua's dofile()
+if not rules or not textEditor then
+  print("\nSyntax error in configFile, rules and textEditor must be specified")
+  os.exit(2)
+end
+
+-- Process -c
+if args.configure then
+  if path.isfile(configFile) then
+    os.execute(textEditor.." "..configFile)
+  end
+  os.exit(0)
+end
+
 db = env:connect(dbFile)
+
+-- Process -i
 if args.initialize then
   -- This one can't use executeSQL because it is guaranteed to fail the first time since the table doesn't exist
   db:execute("drop table sync_history")
@@ -317,22 +334,6 @@ if args.initialize then
       )
     ]])
   end
-end
-
--- Process configFile
-myDofile(configFile) -- Good possibility of a syntax error in configFile, so handle it more gracefully than Lua's dofile()
-if not rules or not textEditor then
-  print("\nSyntax error in configFile, rules and textEditor must be specified")
-  db:close()
-  os.exit(2)
-end
-
--- Process -c
-if args.configure then
-  if path.isfile(configFile) then
-    os.execute(textEditor.." "..configFile)
-  end
-  os.exit(0)
 end
 
 -- Pre routine
