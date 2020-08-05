@@ -346,7 +346,7 @@ if pre then
 end
 
 -- Process rules
-local exitRC, defaultCmd, defaultListCmd, defaultCmdSyntax = 0, cmd, listCmd, cmdSyntax
+local exitRC
 for i, rule in pairs(rules) do
   -- Evaluate the rule
   name = rule.name
@@ -362,12 +362,12 @@ for i, rule in pairs(rules) do
   if dest then dest = replaceEnvironmentVariables(dest) end
   -- Get these from the rule or the defaults
   if args.list then
-    cmd = rule.listCmd and rule.listCmd or defaultListCcmd
+    cmd = rule.listCmd and rule.listCmd or listCmd
   else
-    cmd = rule.cmd and rule.cmd or defaultCmd
+    cmd = rule.cmd and rule.cmd or cmd
   end
   if cmd == "" then cmd = nil end
-  cmdSyntax = rule.cmdSyntax and rule.cmdSyntax or defaultCmdSyntax
+  cmdSyntax = rule.cmdSyntax and rule.cmdSyntax or cmdSyntax
   if cmdSyntax == "" then cmdSyntax = nil end
   -- Print everything but the actual command
   if not args.quiet then crlf(); printRule(name, expression, src, dest) end
@@ -390,11 +390,11 @@ for i, rule in pairs(rules) do
               if not isSameFilespec(srcNQ, destNQ) then
                 if not args.dryRun then
                   local handler = io.popen(actualCmd)
-                  local data = handler:read("*a")
+                  local stdout = handler:read("*a")
                   local dummy, err, rc = handler:close()
+                  if args.quiet then printRule(name, expression, src, dest, cmd, cmdSyntax, actualCmd) end
+                  print("\n"..stdout)
                   if rc ~= 0 then
-                    if args.quiet then printRule(name, expression, src, dest, cmd, cmdSyntax, actualCmd) end
-                    print("\n"..data)
                     print("rc = "..rc)
                     print(err)
                     exitRC = 1
@@ -423,7 +423,12 @@ for i, rule in pairs(rules) do
         else
           -- This is a problem with the rule definition and should always be displayed
           -- In case this hasn't already been printed...
-          if args.quiet then crlf(); printRule(name, expression, src, dest, cmd, cmdSyntax) end
+          if args.quiet then
+            crlf()
+            printRule(name, expression, src, dest, cmd, cmdSyntax)
+          else
+            printRule(nil, nil, nil, nil, cmd, cmdSyntax)
+          end
           print("\nRule skipped because cmd and/or cmdSyntax are nil")
           lastSync(db, src, dest)
         end
