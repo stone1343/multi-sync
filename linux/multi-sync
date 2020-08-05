@@ -1,5 +1,5 @@
 #!/bin/bash
-# multi-sync v2.6 2020-08-05
+# multi-sync v3.0 2020-08-05
 
 # From https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
 INSTALLDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
