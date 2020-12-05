@@ -396,7 +396,7 @@ for i, rule in pairs(rules) do
                   local handler = io.popen(actualCmd)
                   local stdout = handler:read("*a")
                   local dummy, err, rc = handler:close()
-                  if debug then
+                  if args.debug then
                     printRule(name, expression, src, dest, nil, nil, actualCmd)
                   else
                     printRule(nil, nil, src, dest, nil, nil, actualCmd)
