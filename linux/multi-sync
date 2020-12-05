@@ -4,18 +4,18 @@
 INSTALLDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 lua=$(which lua5.4)
 if [ ! -z $lua ]; then
-  export LUA_PATH="~/.luarocks/share/lua/5.4/?.lua;;"
-  export LUA_CPATH="~/.luarocks/lib/lua/5.4/?.so;;"
+  export LUA_PATH="$HOME/.luarocks/share/lua/5.4/?.lua;;"
+  export LUA_CPATH="$HOME/.luarocks/lib/lua/5.4/?.so;;"
 else
   lua=$(which lua5.3)
   if [ ! -z $lua ]; then
-    export LUA_PATH="~/.luarocks/share/lua/5.3/?.lua;;"
-    export LUA_CPATH="~/.luarocks/lib/lua/5.3/?.so;;"
+    export LUA_PATH="$HOME/.luarocks/share/lua/5.3/?.lua;;"
+    export LUA_CPATH="$HOME/.luarocks/lib/lua/5.3/?.so;;"
   else
     lua=$(which lua5.2)
     if [ ! -z $lua ]; then
-      export LUA_PATH="~/.luarocks/share/lua/5.2/?.lua;;"
-      export LUA_CPATH="~/.luarocks/lib/lua/5.2/?.so;;"
+      export LUA_PATH="$HOME/.luarocks/share/lua/5.2/?.lua;;"
+      export LUA_CPATH="$HOME/.luarocks/lib/lua/5.2/?.so;;"
     fi
   fi
 fi
