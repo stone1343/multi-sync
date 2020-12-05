@@ -1,12 +1,29 @@
 #!/bin/bash
-# install v3.0 2020-08-05
+# install v3.1 2020-12-05
 
 if [ $EUID -ne 0 ]; then
   echo "This must be run as root" >&2
   set -e
   exit 1
 fi
-lua=$(which lua)
+USER_HOME=$(getent passwd $SUDO_USER | cut -d: -f6)
+lua=$(which lua5.4)
+if [ ! -z $lua ]; then
+  export LUA_PATH="$USER_HOME/.luarocks/share/lua/5.4/?.lua;;"
+  export LUA_CPATH="$USER_HOME/.luarocks/lib/lua/5.4/?.so;;"
+else
+  lua=$(which lua5.3)
+  if [ ! -z $lua ]; then
+    export LUA_PATH="$USER_HOME/.luarocks/share/lua/5.3/?.lua;;"
+    export LUA_CPATH="$USER_HOME/.luarocks/lib/lua/5.3/?.so;;"
+  else
+    lua=$(which lua5.2)
+    if [ ! -z $lua ]; then
+      export LUA_PATH="$USER_HOME/.luarocks/share/lua/5.2/?.lua;;"
+      export LUA_CPATH="$USER_HOME/.luarocks/lib/lua/5.2/?.so;;"
+    fi
+  fi
+fi
 if [ -z $lua ]; then
   echo "Lua not found"
   exit 1
@@ -16,7 +33,6 @@ if [ $? -ne 0 ]; then
   echo "Pre-reqs not installed"
   exit 1
 fi
-
 INSTALLDIR=/usr/local/bin
 install -m 755 linux/multi-sync $INSTALLDIR
 install -m 644 multi-sync.lua $INSTALLDIR

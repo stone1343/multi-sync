@@ -31,9 +31,10 @@
 -- v2.4   2019-02-03 JMS Change packaging, Linux now relies on libraries installed by LuaRocks
 -- v2.5   2019-10-05 JMS Calling script responsible for ensuring both multi-sync.sqlite3 and multi-sync-config.lua exist
 -- v3.0   2020-08-05 JMS Re-org, breaks compatibility with previous config files, adds textEditor to config file
+-- v3.1   2020-12-05 JMS Change command line options and output; debug replaces quiet so the default is quiet
 
 -- Can't use _VERSION since that's used by Lua
-local version = "3.0"
+local version = "3.1"
 
 -- These will fail if not found but the alternative isn't much better
 local lfs = require "lfs"
@@ -73,6 +74,10 @@ function isSameFilespec(filespec1, filespec2)
 end
 
 function replaceEnvironmentVariables(str)
+  -- Likely good enough proxy for Linux 
+  if os.getenv("HOME") then
+    str = string.gsub(str, "~", os.getenv("HOME"))
+  end
   return string.gsub(string.gsub(str, "{computername}", computerName), "{username}", userName)
 end
 
@@ -182,7 +187,7 @@ end
 env = luasql.sqlite3()
 local parser = argparse()
   :name "multi-sync"
-  :description "Rules-based script for using rsync or other tool to automate backups"
+  :description "Rules-based script for using rsync, robocopy or other tool to automate backups"
   -- https://opensource.org/licenses/MIT
   :epilog [[Copyright (c) 2018-2020 Jeff Stone
 
@@ -192,17 +197,12 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.]]
 
-parser:mutex(
- parser:flag "-n" "--dry-run"
-   :description "Output the final command(s), do not execute"
-   :target "dryRun",
- parser:flag "-q" "--quiet"
-   :description "Quiet mode, suppress non-error messages"
-   :target "quiet",
- parser:flag "-l" "--list"
-   :description "List files which would be copied"
-   :target "list"
-)
+parser:flag "-n" "--dry-run"
+  :description "Output the final command(s), do not execute"
+  :target "dryRun"
+parser:flag "-d" "--debug"
+  :description "Debug mode, display more information"
+  :target "debug"
 parser:mutex(
   parser:flag "-c" "--configure"
     :description "Configure rules"
@@ -210,6 +210,9 @@ parser:mutex(
   parser:flag "-i" "--initialize"
     :description "Initialize the database"
     :target "initialize",
+  parser:flag "-l" "--list"
+    :description "List files which would be copied"
+    :target "list", 
   parser:flag "-p" "--print-history"
     :description "Print sync history"
     :target "printHistory"
@@ -349,6 +352,8 @@ end
 -- Process rules
 local exitRC
 for i, rule in pairs(rules) do
+  -- NQ "no quotes" versions of src and dest
+  local srcNQ, destNQ
   -- Evaluate the rule
   name = rule.name
   if name == "" then name = nil end
@@ -357,10 +362,18 @@ for i, rule in pairs(rules) do
   if expression then expression = replaceEnvironmentVariables(expression) end
   src = rule.src
   if src == "" then src = nil end
-  if src then src = replaceEnvironmentVariables(src) end
+  if src then
+    src = replaceEnvironmentVariables(src)
+    srcNQ = src
+    if string.find(src, " ") then src=[["]]..src..[["]] end
+  end
   dest = rule.dest
   if dest == "" then dest = nil end
-  if dest then dest = replaceEnvironmentVariables(dest) end
+  if dest then
+    dest = replaceEnvironmentVariables(dest)
+    destNQ = dest
+    if string.find(dest, " ") then dest=[["]]..dest..[["]] end
+  end
   -- Get these from the rule or the defaults
   if args.list then
     cmd = rule.listCmd and rule.listCmd or listCmd
@@ -370,31 +383,25 @@ for i, rule in pairs(rules) do
   if cmd == "" then cmd = nil end
   cmdSyntax = rule.cmdSyntax and rule.cmdSyntax or cmdSyntax
   if cmdSyntax == "" then cmdSyntax = nil end
-  -- Print everything but the actual command
-  if not args.quiet then crlf(); printRule(name, expression, src, dest) end
   if src and dest then
-    -- NQ "no quotes" versions of src and dest
-    local srcNQ, destNQ = src, dest
-    -- If src and/or dest have spaces, add quotes for commands
-    if string.find(src, " ") then src=[["]]..src..[["]] end
-    if string.find(dest, " ") then dest=[["]]..dest..[["]] end
-    if (tablex.size(args.cmdLineNames) == 0) or (name and tablex.find(args.cmdLineNames, name)) then
-      -- Also have to double up \
-      if not expression or load("return("..string.gsub(expression, "\\", "\\\\")..")")() then
-        if cmd and cmdSyntax then
-          local actualCmd = load("return("..cmdSyntax..")")()
-          -- Print the actual command
-          if not args.quiet then printRule(nil, nil, nil, nil, nil, nil, actualCmd) end
-          if path.isdir(srcNQ) or path.isfile(srcNQ) then
-            -- If dest directory doesn't exist, skip
-            if path.isdir(destNQ) then
-              if not isSameFilespec(srcNQ, destNQ) then
+    if not isSameFilespec(srcNQ, destNQ) then
+      if cmd and cmdSyntax then
+        local actualCmd = load("return("..cmdSyntax..")")()
+        if path.isdir(srcNQ) or path.isfile(srcNQ) then
+          if path.isdir(destNQ) then
+            if (tablex.size(args.cmdLineNames) == 0) or (name and tablex.find(args.cmdLineNames, name)) then
+              if not expression or load("return("..string.gsub(expression, "\\", "\\\\")..")")() then
+                crlf()
                 if not args.dryRun then
                   local handler = io.popen(actualCmd)
                   local stdout = handler:read("*a")
                   local dummy, err, rc = handler:close()
+                  if debug then
+                    printRule(name, expression, src, dest, nil, nil, actualCmd)
+                  else
+                    printRule(nil, nil, src, dest, nil, nil, actualCmd)
+                  end
                   if string.len(stdout) ~= 0 or rc ~= 0 then
-                    if args.quiet then printRule(nil, nil, src, dest, nil, nil, actualCmd) end
                   end
                   if string.len(stdout) ~= 0 then print("\n"..stdout) end
                   if rc ~= 0 then
@@ -403,54 +410,59 @@ for i, rule in pairs(rules) do
                     exitRC = 1
                   end
                   if not args.list then executeSQL(db, string.format("insert or replace into sync_history (src, dest, utc, rc) values('%s', '%s', datetime('now'), '%d')", src, dest, rc)) end
+                else
+                  printRule(nil, nil, src, dest, nil, nil, actualCmd)
                 end
-                if not args.quiet then lastSync(db, src, dest) end
+                lastSync(db, src, dest)
               else
-                -- This is an error in the configFile and should always be displayed
-                -- In case this hasn't already been printed...
-                if args.quiet then crlf(); printRule(name, expression, src, dest) end
-                print("\nRule skipped because src and dest are the same")
+                if args.debug then
+                  crlf();
+                  printRule(name, expression, src, dest)
+                  print("\nRule skipped because of expression")
+                end
               end
             else
-              if not args.quiet then
-                print("\nRule skipped because dest does not exist")
-                lastSync(db, src, dest)
+              if args.debug then
+                crlf();
+                printRule(name, expression, src, dest)
+                print("\nRule skipped because of name")
               end
             end
           else
-            if not args.quiet then
-              print("\nRule skipped because src does not exist")
+            if args.debug then
+              crlf();
+              printRule(name, expression, src, dest)
+              print("\nRule skipped because dest does not exist")
               lastSync(db, src, dest)
             end
           end
         else
-          -- This is a problem with the rule definition and should always be displayed
-          -- In case this hasn't already been printed...
-          if args.quiet then
+          if args.debug then
             crlf()
-            printRule(name, expression, src, dest, cmd, cmdSyntax)
-          else
-            printRule(nil, nil, nil, nil, cmd, cmdSyntax)
+            printRule(name, expression, src, dest)
+            print("\nRule skipped because src does not exist")
+            lastSync(db, src, dest)
           end
-          print("\nRule skipped because cmd and/or cmdSyntax are nil")
-          lastSync(db, src, dest)
         end
       else
-        if not args.quiet then
-          print("\nRule skipped because of expression")
-        end
+        -- This is a config issue, should always be displayed
+        crlf()
+        printRule(name, expression, src, dest, cmd, cmdSyntax)
+        print("\nRule skipped because cmd and/or cmdSyntax are nil")
       end
     else
-      if not args.quiet then
-        print("\nRule skipped because of name")
-      end
+      -- This is a config issue, should always be displayed
+      crlf()
+      printRule(name, expression, src, dest)
+      print("\nRule skipped because src and dest are the same")
     end
   else
-    -- In case this hasn't already been printed...
-    if args.quiet then crlf(); printRule(name, expression, src, dest) end
+    -- This is a config issue, should always be displayed
+    crlf()
+    printRule(name, expression, src, dest)
     print("\nRule skipped because src and/or dest are not specified")
   end
-end
+end --for
 
 -- Post routine
 if post then
