@@ -1,6 +1,6 @@
 --[=[
 
- multi-sync-config.lua (v3.0 2020-10-26)
+ multi-sync-config.lua (v3.1 2020-12-05)
 
  Each rule must define:
   src - a directory or a file
@@ -14,6 +14,7 @@
   cmdSyntax
 
  In expression, src and dest, {computername} and {username} will be replaced with the actual computername and username
+ and ~ will be replaced with the value of $HOME
 
  For rsync to work as expected, all directories should include trailing /
 
@@ -29,7 +30,7 @@ cmdSyntax = [[cmd.." "..src.." "..dest]]
 rules = {
  {
   name = "home",
-  src = "/home/",
+  src  = "/home/",
   dest = "/media/{username}/backup/{computername}/home/"
  }
 }

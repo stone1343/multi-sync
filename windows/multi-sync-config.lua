@@ -1,6 +1,6 @@
 --[=[
 
- multi-sync-config.lua (v3.0 2020-08-05)
+ multi-sync-config.lua (v3.1 2020-12-05)
 
  Each rule must define:
   src - a directory or a file
@@ -27,30 +27,30 @@ listCmd = "sfk sync -mirror -wipe -nohidden"
 cmdSyntax = [[cmd.." "..src.." "..dest]]
 
 rules = {
- -- This is a file
  {
-  name = "multi-sync-config",
-  src = [[C:\Users\{username}\AppData\Local\multi-sync-config.lua]],
+  -- This is a file
+ name = "multi-sync-config",
+  src  = [[C:\Users\{username}\AppData\Local\multi-sync-config.lua]],
   dest = [[E:\backup\{computername}\{username}\AppData\Local]],
  },
  {
   name = "documents",
-  src = [[C:\Users\{username}\Documents]],
+  src  = [[C:\Users\{username}\Documents]],
   dest = [[E:\backup\{computername}\{username}\Documents]],
  },
  {
   name = "music",
-  src = [[C:\Users\{username}\Music]],
+  src  = [[C:\Users\{username}\Music]],
   dest = [[E:\backup\{computername}\{username}\Music]],
  },
  {
   name = "pictures",
-  src = [[C:\Users\{username}\Pictures]],
+  src  = [[C:\Users\{username}\Pictures]],
   dest = [[E:\backup\{computername}\{username}\Pictures]],
  },
  {
   name = "videos",
-  src = [[C:\Users\{username}\Videos]],
+  src  = [[C:\Users\{username}\Videos]],
   dest = [[E:\backup\{computername}\{username}\Videos]],
  },
 }
