@@ -74,8 +74,7 @@ function isSameFilespec(filespec1, filespec2)
 end
 
 function replaceEnvironmentVariables(str)
-  -- Likely good enough proxy for Linux 
-  if os.getenv("HOME") then
+  if not path.is_windows then
     str = string.gsub(str, "~", os.getenv("HOME"))
   end
   return string.gsub(string.gsub(str, "{computername}", computerName), "{username}", userName)
