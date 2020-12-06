@@ -392,17 +392,17 @@ for i, rule in pairs(rules) do
               if not expression or load("return("..string.gsub(expression, "\\", "\\\\")..")")() then
                 crlf()
                 if not args.dryRun then
-                  local handler = io.popen(actualCmd)
-                  local stdout = handler:read("*a")
-                  local dummy, err, rc = handler:close()
                   if args.debug then
                     printRule(name, expression, src, dest, nil, nil, actualCmd)
                   else
                     printRule(nil, nil, src, dest, nil, nil, actualCmd)
                   end
-                  if string.len(stdout) ~= 0 or rc ~= 0 then
+                  local handler = io.popen(actualCmd)
+                  local stdout = handler:read("*a")
+                  local dummy, err, rc = handler:close()
+                  if string.len(stdout) ~= 0 then
+                    print("\n"..stdout)
                   end
-                  if string.len(stdout) ~= 0 then print("\n"..stdout) end
                   if rc ~= 0 then
                     print("rc = "..rc)
                     print(err)
