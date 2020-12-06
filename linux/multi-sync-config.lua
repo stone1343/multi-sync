@@ -1,6 +1,6 @@
 --[=[
 
- multi-sync-config.lua (v3.1 2020-12-05)
+ multi-sync-config.lua (v3.1 2020-12-06)
 
  Each rule must define:
   src - a directory or a file
@@ -24,7 +24,7 @@ textEditor = "editor"
 
 -- Defaults, if these are not specified here, must be specified for every rule
 syncCmd = [[sudo rsync -qa --delete-before --exclude lost+found --exclude '.Trash-*']]
-listCmd = [[sudo rsync -nva --delete-before --exclude lost+found --exclude '.Trash-*']]
+listCmd = [[rsync -nva --delete-before --exclude lost+found --exclude '.Trash-*']]
 cmdSyntax = [[cmd.." "..src.." "..dest]]
 
 rules = {

@@ -1,6 +1,6 @@
 --[=[
 
- multi-sync-config.lua (v3.1 2020-12-05)
+ multi-sync-config.lua (v3.1 2020-12-06)
 
  Each rule must define:
   src - a directory or a file
@@ -22,36 +22,37 @@
 textEditor = "notepad"
 
 -- Defaults, if these are not specified here, must be specified for every rule
-syncCmd = "sfk sync -mirror -wipe -nohidden -yes"
-listCmd = "sfk sync -mirror -wipe -nohidden"
-cmdSyntax = [[cmd.." "..src.." "..dest]]
+syncCmd = "/njh /njs"
+listCmd = "/njh /njs /l"
+cmdSyntax = [["robocopy "..src.." "..dest.." "..cmd]]
 
 rules = {
  {
   -- This is a file
- name = "multi-sync-config",
-  src  = [[C:\Users\{username}\AppData\Local\multi-sync-config.lua]],
+  name = "multi-sync-config",
+  src  = [[C:\Users\{username}\AppData\Local]],
   dest = [[E:\backup\{computername}\{username}\AppData\Local]],
+  cmdSyntax = [["robocopy "..src.." "..dest.." multi-sync-config.lua "..cmd]]
  },
  {
   name = "documents",
   src  = [[C:\Users\{username}\Documents]],
-  dest = [[E:\backup\{computername}\{username}\Documents]],
+  dest = [[E:\backup\{computername}\{username}\Documents]]
  },
  {
   name = "music",
   src  = [[C:\Users\{username}\Music]],
-  dest = [[E:\backup\{computername}\{username}\Music]],
+  dest = [[E:\backup\{computername}\{username}\Music]]
  },
  {
   name = "pictures",
   src  = [[C:\Users\{username}\Pictures]],
-  dest = [[E:\backup\{computername}\{username}\Pictures]],
+  dest = [[E:\backup\{computername}\{username}\Pictures]]
  },
  {
   name = "videos",
   src  = [[C:\Users\{username}\Videos]],
-  dest = [[E:\backup\{computername}\{username}\Videos]],
+  dest = [[E:\backup\{computername}\{username}\Videos]]
  },
 }
 

@@ -32,6 +32,7 @@
 -- v2.5   2019-10-05 JMS Calling script responsible for ensuring both multi-sync.sqlite3 and multi-sync-config.lua exist
 -- v3.0   2020-08-05 JMS Re-org, breaks compatibility with previous config files, adds textEditor to config file
 -- v3.1   2020-12-05 JMS Change command line options and output; debug replaces quiet so the default is quiet
+--        2020-12 06 JMS Fix defect with cmdSyntax
 
 -- Can't use _VERSION since that's used by Lua
 local version = "3.1"
@@ -95,7 +96,7 @@ function myDofile(fileName)
 end
 
 -- None of the parameters are required
-function printRule(name, expression, src, dest, cmd, cmdSyntax, actualCmd)
+function printRule(name, expression, src, dest, cmd, syntax, actualCmd)
   -- formatString works like C sprintf, -12 indicates the field is 12 characters wide and left-justified
   local formatString = "%-12s  %s"
   if name then print(string.format(formatString, "name", name)) end
@@ -103,7 +104,7 @@ function printRule(name, expression, src, dest, cmd, cmdSyntax, actualCmd)
   if src then print(string.format(formatString, "src", src)) end
   if dest then print(string.format(formatString, "dest", dest)) end
   if cmd then print(string.format(formatString, "cmd", cmd)) end
-  if cmdSyntax then print(string.format(formatString, "cmdSyntax", cmdSyntax)) end
+  if syntax then print(string.format(formatString, "syntax", syntax)) end
   if actualCmd then print(string.format(formatString, "actualCmd", actualCmd)) end
 end
 
@@ -380,12 +381,12 @@ for i, rule in pairs(rules) do
     cmd = rule.syncCmd and rule.syncCmd or syncCmd
   end
   if cmd == "" then cmd = nil end
-  cmdSyntax = rule.cmdSyntax and rule.cmdSyntax or cmdSyntax
-  if cmdSyntax == "" then cmdSyntax = nil end
+  syntax = rule.cmdSyntax and rule.cmdSyntax or cmdSyntax
+  if syntax == "" then syntax = nil end
   if src and dest then
     if not isSameFilespec(srcNQ, destNQ) then
-      if cmd and cmdSyntax then
-        local actualCmd = load("return("..cmdSyntax..")")()
+      if cmd and syntax then
+        local actualCmd = load("return("..syntax..")")()
         if path.isdir(srcNQ) or path.isfile(srcNQ) then
           if path.isdir(destNQ) then
             if (tablex.size(args.cmdLineNames) == 0) or (name and tablex.find(args.cmdLineNames, name)) then
@@ -393,7 +394,7 @@ for i, rule in pairs(rules) do
                 crlf()
                 if not args.dryRun then
                   if args.debug then
-                    printRule(name, expression, src, dest, nil, nil, actualCmd)
+                    printRule(name, expression, src, dest, cmd, syntax, actualCmd)
                   else
                     printRule(nil, nil, src, dest, nil, nil, actualCmd)
                   end
@@ -446,8 +447,8 @@ for i, rule in pairs(rules) do
       else
         -- This is a config issue, should always be displayed
         crlf()
-        printRule(name, expression, src, dest, cmd, cmdSyntax)
-        print("\nRule skipped because cmd and/or cmdSyntax are nil")
+        printRule(name, expression, src, dest, cmd, syntax)
+        print("\nRule skipped because cmd and/or syntax are nil")
       end
     else
       -- This is a config issue, should always be displayed
