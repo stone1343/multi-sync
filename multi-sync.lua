@@ -221,7 +221,7 @@ parser:mutex(
         print("Penlight "..utils._VERSION)
         os.exit(0)
       end
-    )
+    ),
   parser:flag "-c" "--configure"
     :description "Configure rules"
     :target "configure",
@@ -241,7 +241,7 @@ parser:mutex(
   parser:option "-f" "--forget"
     :description "Forget row(s) of sync history"
     :target "forget"
-    :args("+"),
+    :args("+")
 )
 parser:argument "names"
   :args("*")
