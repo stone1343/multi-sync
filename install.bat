@@ -9,7 +9,7 @@ if "%1"=="" (
 if not exist "%1" (
   goto :help
 )
-xcopy /s /y windows\* "%1"
+xcopy /d /y /s windows\* "%1"
 xcopy /d /y multi-sync.lua "%1"
 goto :eof
 

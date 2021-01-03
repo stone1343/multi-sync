@@ -22,7 +22,7 @@
 textEditor = "notepad"
 
 -- Defaults, if these are not specified here, must be specified for every rule
-syncCmd = "/njh /njs /nfl /ndl"
+syncCmd = "/njh /njs /nfl /ndl /r:2 /w:2"
 listCmd = syncCmd.." /l"
 cmdSyntax = [["robocopy "..src.." "..dest.." /mir "..cmd]]
 
