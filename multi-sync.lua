@@ -198,9 +198,6 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.]]
 
-parser:flag "--verbose"
-  :description "Verbose mode"
-  :target "verbose"
 parser:mutex(
   parser:flag "-v" "--version"
     :description "Output version information and exit"
@@ -228,9 +225,6 @@ parser:mutex(
   parser:flag "-i" "--initialize"
     :description "Initialize the database"
     :target "initialize",
-  parser:flag "-n" "--dry-run"
-    :description "Output the final command(s), do not execute"
-    :target "dryRun",
   parser:flag "-l" "--list"
     :description "List files which would be copied"
     :target "list", 
@@ -243,6 +237,12 @@ parser:mutex(
     :target "forget"
     :args("+")
 )
+parser:flag "--verbose"
+  :description "Verbose mode"
+  :target "verbose"
+parser:flag "-n" "--dry-run"
+  :description "Output the final command(s), do not execute"
+  :target "dryRun"
 parser:argument "names"
   :args("*")
   :description "Specify rule(s) to run by name. May specify zero, one or more names"
