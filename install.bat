@@ -1,5 +1,5 @@
 @echo off
-rem install.bat v3.0 2020-08-05
+rem install.bat v3.2 2021-01-03
 
 setlocal
 

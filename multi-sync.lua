@@ -33,9 +33,10 @@
 -- v3.0   2020-08-05 JMS Re-org, breaks compatibility with previous config files, adds textEditor to config file
 -- v3.1   2020-12-05 JMS Change command line options and output; debug replaces quiet so the default is quiet
 --        2020-12 06 JMS Fix defect with cmdSyntax
+-- v3.2   2021-01-03 JMS Linux INSTALLDIR is /usr/local/share/multi-sync, following the FHS better
 
 -- Can't use _VERSION since that's used by Lua
-local version = "3.1"
+local version = "3.2"
 
 -- These will fail if not found but the alternative isn't much better
 local lfs = require "lfs"

@@ -1,11 +1,12 @@
 #!/bin/bash
-# install v3.1 2020-12-05
+# install v3.2 2021-01-03
 
 if [ $EUID -ne 0 ]; then
   echo "This must be run as root" >&2
   set -e
   exit 1
 fi
+# Check pre-reqs
 USER_HOME=$(getent passwd $SUDO_USER | cut -d: -f6)
 lua=$(which lua5.4)
 if [ ! -z $lua ]; then
@@ -33,11 +34,13 @@ if [ $? -ne 0 ]; then
   echo "Pre-reqs not installed"
   exit 1
 fi
-INSTALLDIR=/usr/local/bin
-install -m 755 linux/multi-sync $INSTALLDIR
+[ ! -d /usr/local/bin ] && mkdir -p /usr/local/bin
+install -m 755 linux/multi-sync /usr/local/bin
+INSTALLDIR=/usr/local/share/multi-sync
+[ ! -d $INSTALLDIR ] && mkdir -p $INSTALLDIR
 install -m 644 multi-sync.lua $INSTALLDIR
 install -m 644 linux/multi-sync-config.lua $INSTALLDIR
 install -m 644 linux/multi-sync.sqlite3 $INSTALLDIR
-if [[ -f $INSTALLDIR/multi-sync && -f $INSTALLDIR/multi-sync.lua && -f $INSTALLDIR/multi-sync-config.lua && -f $INSTALLDIR/multi-sync.sqlite3 ]]; then
+if [ -f /usr/local/bin/multi-sync && -f $INSTALLDIR/multi-sync.lua && -f $INSTALLDIR/multi-sync-config.lua && -f $INSTALLDIR/multi-sync.sqlite3 ]; then
   echo "multi-sync installed"
 fi

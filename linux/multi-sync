@@ -1,7 +1,6 @@
 #!/bin/bash
-# multi-sync v3.1 2020-12-05
+# multi-sync v3.2 2021-01-03
 
-INSTALLDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 lua=$(which lua5.4)
 if [ ! -z $lua ]; then
   export LUA_PATH="$HOME/.luarocks/share/lua/5.4/?.lua;;"
@@ -19,15 +18,16 @@ else
     fi
   fi
 fi
+INSTALLDIR=/usr/local/share/multi-sync
 ms=$INSTALLDIR/multi-sync.lua
 export COMPUTERNAME=$(hostname)
 export USERNAME=$USER
-export CONFIGDIR="$HOME/.config"
+export CONFIGDIR=$HOME/.config
 [ ! -d $CONFIGDIR ] && mkdir $CONFIGDIR
 [ ! -f $CONFIGDIR/multi-sync.sqlite3 ] && cp $INSTALLDIR/multi-sync.sqlite3 $CONFIGDIR
 [ ! -f $CONFIGDIR/multi-sync-config.lua ] && cp $INSTALLDIR/multi-sync-config.lua $CONFIGDIR
 # If Lua and multi-sync.lua are both found, execute
-if [[ -f "$lua" && -f "$ms" ]]; then
+if [ ! -z $lua && -f $ms ]; then
   $lua $ms "$@"
   exit $?
 else
