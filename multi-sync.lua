@@ -34,9 +34,10 @@
 -- v3.1   2020-12-05 JMS Change command line options and output; debug replaces quiet so the default is quiet
 --        2020-12 06 JMS Fix defect with cmdSyntax
 -- v3.2   2021-01-03 JMS Linux INSTALLDIR is /usr/local/share/multi-sync, following the FHS better
+--                       --verbose replaces --debug command line option, there's no short version of --verbose
 
--- Can't use _VERSION since that's used by Lua
-local version = "3.2"
+local multisync_version = "3.2"
+-- To update copyright date (e.g. 2018-2021), see epilog below
 
 -- These will fail if not found but the alternative isn't much better
 local lfs = require "lfs"
@@ -173,9 +174,8 @@ end
     Main begins here
 --]]
 
-multisync = "multi-sync"
-local dbFilename = multisync..".sqlite3"
-local configFilename = multisync.."-config.lua"
+local dbFilename = "multi-sync.sqlite3"
+local configFilename = "multi-sync-config.lua"
 
 -- This basically forces user to use the correct entry point (.bat or Bash)
 computerName, userName = os.getenv("COMPUTERNAME"), os.getenv("USERNAME")
@@ -190,7 +190,7 @@ local parser = argparse()
   :name "multi-sync"
   :description "Rules-based script for using rsync, robocopy or other tool to automate backups"
   -- https://opensource.org/licenses/MIT
-  :epilog [[Copyright (c) 2018-2020 Jeff Stone
+  :epilog [[Copyright (c) 2018-2021 Jeff Stone
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -201,9 +201,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 parser:flag "-n" "--dry-run"
   :description "Output the final command(s), do not execute"
   :target "dryRun"
-parser:flag "-d" "--debug"
-  :description "Debug mode, display more information"
-  :target "debug"
+parser:flag "--verbose"
+  :description "Verbose mode"
+  :target "verbose"
 parser:mutex(
   parser:flag "-c" "--configure"
     :description "Configure rules"
@@ -226,7 +226,7 @@ parser:mutex(
     :description "Output version information and exit"
     :action(
       function()
-        print("\n"..multisync.." "..version)
+        print("\n multi-sync "..multisync_version)
         print(_VERSION)
         print(lfs._VERSION)
         print(luasql._VERSION)
@@ -394,7 +394,7 @@ for i, rule in pairs(rules) do
               if not expression or load("return("..string.gsub(expression, "\\", "\\\\")..")")() then
                 crlf()
                 if not args.dryRun then
-                  if args.debug then
+                  if args.verbose then
                     printRule(name, expression, src, dest, cmd, syntax, actualCmd)
                   else
                     printRule(nil, nil, src, dest, nil, nil, actualCmd)
@@ -416,21 +416,21 @@ for i, rule in pairs(rules) do
                 end
                 lastSync(db, src, dest)
               else
-                if args.debug then
+                if args.verbose then
                   crlf();
                   printRule(name, expression, src, dest)
                   print("\nRule skipped because of expression")
                 end
               end
             else
-              if args.debug then
+              if args.verbose then
                 crlf();
                 printRule(name, expression, src, dest)
                 print("\nRule skipped because of name")
               end
             end
           else
-            if args.debug then
+            if args.verbose then
               crlf();
               printRule(name, expression, src, dest)
               print("\nRule skipped because dest does not exist")
@@ -438,7 +438,7 @@ for i, rule in pairs(rules) do
             end
           end
         else
-          if args.debug then
+          if args.verbose then
             crlf()
             printRule(name, expression, src, dest)
             print("\nRule skipped because src does not exist")
