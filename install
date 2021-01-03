@@ -41,6 +41,6 @@ INSTALLDIR=/usr/local/share/multi-sync
 install -m 644 multi-sync.lua $INSTALLDIR
 install -m 644 linux/multi-sync-config.lua $INSTALLDIR
 install -m 644 linux/multi-sync.sqlite3 $INSTALLDIR
-if [ -f /usr/local/bin/multi-sync && -f $INSTALLDIR/multi-sync.lua && -f $INSTALLDIR/multi-sync-config.lua && -f $INSTALLDIR/multi-sync.sqlite3 ]; then
+if [ -f /usr/local/bin/multi-sync ] && [ -f $INSTALLDIR/multi-sync.lua ] && [ -f $INSTALLDIR/multi-sync-config.lua ] && [ -f $INSTALLDIR/multi-sync.sqlite3 ]; then
   echo "multi-sync installed"
 fi
