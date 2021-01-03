@@ -226,7 +226,7 @@ parser:mutex(
     :description "Output version information and exit"
     :action(
       function()
-        print("\n multi-sync "..multisync_version)
+        print("multi-sync "..multisync_version)
         print(_VERSION)
         print(lfs._VERSION)
         print(luasql._VERSION)
