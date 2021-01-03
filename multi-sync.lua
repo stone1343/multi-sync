@@ -230,7 +230,7 @@ parser:mutex(
     :target "initialize",
   parser:flag "-n" "--dry-run"
     :description "Output the final command(s), do not execute"
-    :target "dryRun"
+    :target "dryRun",
   parser:flag "-l" "--list"
     :description "List files which would be copied"
     :target "list", 
