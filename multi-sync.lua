@@ -265,11 +265,11 @@ if args.printHistory then
     elseif isFile(path.join(dbArgument, dbFilename)) then
       dbFile = path.join(dbArgument, dbFilename)
     else
-      print("\nprint-history argument must specify multi-sync.sqlite3 or a directory containing it")
+      print("print-history argument must specify multi-sync.sqlite3 or a directory containing it")
     end
   end
   if dbFile then
-    print("\nPrinting sync history from "..dbFile)
+    print("Printing sync history from "..dbFile)
     db = env:connect(dbFile)
     printHistory(db)
     db:close()
@@ -288,7 +288,7 @@ if args.forget then
         print("Deleted rowid "..f)
       end
     else
-      print("\nIgnoring non-numeric "..args.forget[i])
+      print("Ignoring non-numeric "..args.forget[i])
     end
   end
   db:close()
