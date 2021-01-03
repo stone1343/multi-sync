@@ -36,7 +36,7 @@ rules = {
 }
 
 post = [[
-  if isDir('/media/{username}/backup/{computername}/home/{username}/.config/') then
-    copyFile(dbFile, '/media/{username}/backup/{computername}/home/{username}/.config/')
-  end
+ if isDir('/media/{username}/backup/{computername}/home/{username}/.config/') then
+  copyFile(dbFile, '/media/{username}/backup/{computername}/home/{username}/.config/')
+ end
 ]]

@@ -57,7 +57,7 @@ rules = {
 }
 
 post = [[
-  if isDir('E:\backup\{computername}\{username}\AppData\Local') then
-    copyFile(dbFile, 'E:\backup\{computername}\{username}\AppData\Local')
-  end
+ if isDir('E:\backup\{computername}\{username}\AppData\Local') then
+  copyFile(dbFile, 'E:\backup\{computername}\{username}\AppData\Local')
+ end
 ]]

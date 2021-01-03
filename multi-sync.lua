@@ -171,7 +171,7 @@ function printHistory(db, rowid)
 end
 
 --[[
-    Main begins here
+  Main begins here
 --]]
 
 local dbFilename = "multi-sync.sqlite3"
@@ -225,14 +225,16 @@ parser:mutex(
   parser:flag "-p" "--print-history"
     :description "Print sync history"
     :target "printHistory"
+    -- One optional argument = location of multi-sync.sqlite3
     :args("?"),
   parser:option "-f" "--forget"
     :description "Forget row(s) of sync history"
     :target "forget"
+    -- One or more arguments = rowid(s) to forget
     :args("+")
 )
--- Optional flags for normal operation, even though they're not mutually-exclusive with the above options,
--- they have no effect
+-- Optional flags for normal operation
+-- Even though they're not mutually-exclusive with the above flags, these would have no effect
 parser:flag "--verbose"
   :description "Verbose mode"
   :target "verbose"
@@ -246,9 +248,10 @@ parser:flag "-n" "--dry-run"
   :description "Output the final command(s), do not execute"
   :target "dryRun"
 parser:argument "names"
-  :args("*")
   :description "Specify rule(s) to run by name. May specify zero, one or more names"
   :target "cmdLineNames"
+  -- Zero, one or more arguments = names to process
+  :args("*")
 local args = parser:parse()
 
 -- Process -p
