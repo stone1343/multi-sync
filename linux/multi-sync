@@ -27,7 +27,7 @@ export CONFIGDIR=$HOME/.config
 [ ! -f $CONFIGDIR/multi-sync.sqlite3 ] && cp $INSTALLDIR/multi-sync.sqlite3 $CONFIGDIR
 [ ! -f $CONFIGDIR/multi-sync-config.lua ] && cp $INSTALLDIR/multi-sync-config.lua $CONFIGDIR
 # If Lua and multi-sync.lua are both found, execute
-if [ ! -z $lua && -f $ms ]; then
+if [ ! -z $lua ] && [ -f $ms ]; then
   $lua $ms "$@"
   exit $?
 else
