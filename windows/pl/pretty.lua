@@ -170,6 +170,12 @@ end
 -- extra value. Normally puts out one item per line, using
 -- the provided indent; set the second parameter to an empty string
 -- if you want output on one line.
+--
+-- *NOTE:* this is NOT a serialization function, not a full blown
+-- debug function. Checkout out respectively the
+-- [serpent](https://github.com/pkulchenko/serpent)
+-- or [inspect](https://github.com/kikito/inspect.lua)
+-- Lua modules for that if you need them.
 -- @tab tbl Table to serialize to a string.
 -- @string[opt] space The indent to use.
 -- Defaults to two spaces; pass an empty string for no indentation.
@@ -254,7 +260,12 @@ function pretty.write (tbl,space,not_clever)
                   ordered_keys[#ordered_keys + 1] = k
                end
             end
-            table.sort(ordered_keys)
+            table.sort(ordered_keys, function (a, b)
+                if type(a) == type(b)  and type(a) == 'string' then
+                    return a < b
+                end
+                return type(a) == 'boolean' or (type(b) ~= 'boolean' and type(a) == 'table')
+            end)
             local function write_entry (key, val)
                 local tkey = type(key)
                 local numkey = tkey == 'number'
@@ -310,6 +321,49 @@ function pretty.dump (t, filename)
     end
 end
 
+--- Dump a series of arguments to stdout for debug purposes.
+-- This function is attached to the module table `__call` method, to make it
+-- extra easy to access. So the full:
+--
+--     print(require("pl.pretty").write({...}))
+--
+-- Can be shortened to:
+--
+--     require"pl.pretty" (...)
+--
+-- Any `nil` entries will be printed as `"<nil>"` to make them explicit.
+-- @param ... the parameters to dump to stdout.
+-- @usage
+-- -- example debug output
+-- require"pl.pretty" ("hello", nil, "world", { bye = "world", true} )
+--
+-- -- output:
+-- {
+--   ["arg 1"] = "hello",
+--   ["arg 2"] = "<nil>",
+--   ["arg 3"] = "world",
+--   ["arg 4"] = {
+--     true,
+--     bye = "world"
+--   }
+-- }
+function pretty.debug(...)
+    local n = select("#", ...)
+    local t = { ... }
+    for i = 1, n do
+        local value = t[i]
+        if value == nil then
+            value = "<nil>"
+        end
+        t[i] = nil
+        t["arg " .. i] = value
+    end
+
+    print(pretty.write(t))
+    return true
+end
+
+
 local memp,nump = {'B','KiB','MiB','GiB'},{'','K','M','B'}
 
 local function comma (val)
@@ -353,4 +407,8 @@ function pretty.number (num,kind,prec)
     end
 end
 
-return pretty
+return setmetatable(pretty, {
+    __call = function(self, ...)
+        return self.debug(...)
+    end
+})
