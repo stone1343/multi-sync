@@ -383,21 +383,21 @@ for i, rule in pairs(rules) do
   if cmd == "" then cmd = nil end
   syntax = rule.cmdSyntax and rule.cmdSyntax or cmdSyntax
   if syntax == "" then syntax = nil end
-  if src and dest then
-    if not isSameFilespec(srcNQ, destNQ) then
+  if (tablex.size(args.cmdLineNames) == 0) or (name and tablex.find(args.cmdLineNames, name)) then
+    if not expression or load("return("..string.gsub(expression, "\\", "\\\\")..")")() then
       if cmd and syntax then
-        local actualCmd = load("return("..syntax..")")()
-        if path.isdir(srcNQ) or path.isfile(srcNQ) then
-          if path.isdir(destNQ) then
-            if (tablex.size(args.cmdLineNames) == 0) or (name and tablex.find(args.cmdLineNames, name)) then
-              if not expression or load("return("..string.gsub(expression, "\\", "\\\\")..")")() then
+        if src and dest then
+          if not isSameFilespec(srcNQ, destNQ) then
+            local actualCmd = load("return("..syntax..")")()
+            if path.isdir(srcNQ) or path.isfile(srcNQ) then
+              if path.isdir(destNQ) then
                 crlf()
+                if args.verbose then
+                  printRule(name, expression, src, dest, cmd, syntax, actualCmd)
+                else
+                  printRule(name, expression, src, dest, nil, nil, actualCmd)
+                end
                 if not args.dryRun then
-                  if args.verbose then
-                    printRule(name, expression, src, dest, cmd, syntax, actualCmd)
-                  else
-                    printRule(nil, nil, src, dest, nil, nil, actualCmd)
-                  end
                   local handler = io.popen(actualCmd)
                   local stdout = handler:read("*a")
                   local dummy, err, rc = handler:close()
@@ -410,57 +410,55 @@ for i, rule in pairs(rules) do
                     exitRC = 1
                   end
                   if not args.list then executeSQL(db, string.format("insert or replace into sync_history (src, dest, utc, rc) values('%s', '%s', datetime('now'), '%d')", src, dest, rc)) end
-                else
-                  printRule(nil, nil, src, dest, nil, nil, actualCmd)
                 end
                 lastSync(db, src, dest)
               else
                 if args.verbose then
                   crlf();
                   printRule(name, expression, src, dest)
-                  print("\nRule skipped because of expression")
+                  print("\nRule skipped because dest does not exist")
+                  lastSync(db, src, dest)
                 end
               end
             else
               if args.verbose then
-                crlf();
+                crlf()
                 printRule(name, expression, src, dest)
-                print("\nRule skipped because of name")
+                print("\nRule skipped because src does not exist")
+                lastSync(db, src, dest)
               end
             end
           else
-            if args.verbose then
-              crlf();
-              printRule(name, expression, src, dest)
-              print("\nRule skipped because dest does not exist")
-              lastSync(db, src, dest)
-            end
-          end
-        else
-          if args.verbose then
+            -- This is a config issue, should always be displayed
             crlf()
             printRule(name, expression, src, dest)
-            print("\nRule skipped because src does not exist")
-            lastSync(db, src, dest)
+            print("\nRule skipped because src and dest are the same")
           end
+        else
+          -- This is a config issue, should always be displayed
+          crlf()
+          printRule(name, expression, src, dest)
+          print("\nRule skipped because src and/or dest are not specified")
         end
       else
         -- This is a config issue, should always be displayed
-        crlf()
+       crlf()
         printRule(name, expression, src, dest, cmd, syntax)
         print("\nRule skipped because cmd and/or syntax are nil")
       end
     else
-      -- This is a config issue, should always be displayed
-      crlf()
-      printRule(name, expression, src, dest)
-      print("\nRule skipped because src and dest are the same")
+      if args.verbose then
+        crlf();
+        printRule(name, expression, src, dest)
+        print("\nRule skipped because of expression")
+      end
     end
   else
-    -- This is a config issue, should always be displayed
-    crlf()
-    printRule(name, expression, src, dest)
-    print("\nRule skipped because src and/or dest are not specified")
+    if args.verbose then
+      crlf();
+      printRule(name, expression, src, dest)
+      print("\nRule skipped because of name")
+    end
   end
 end --for
 
