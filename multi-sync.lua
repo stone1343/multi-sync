@@ -162,9 +162,9 @@ function printHistory(db, rowid)
     end
   else
     if rowid then
-      print("\nNo rowid "..rowid)
+      print("No rowid "..rowid)
     else
-      print("\nNo sync history")
+      print("No sync history")
     end
   end
   return n
@@ -176,15 +176,15 @@ end
 
 local dbFilename = "multi-sync.sqlite3"
 local configFilename = "multi-sync-config.lua"
-
--- This basically forces user to use the correct entry point (.bat or Bash)
 computerName, userName = os.getenv("COMPUTERNAME"), os.getenv("USERNAME")
 local configDir = os.getenv("CONFIGDIR")
 if (not computerName) or (not userName) or (not configDir) then
   print("Set environment variables COMPUTERNAME, USERNAME and CONFIGDIR prior to calling Lua")
   os.exit(2)
 end
-
+dbFile = path.join(configDir, dbFilename)
+configFile = path.join(configDir, configFilename)
+local db
 env = luasql.sqlite3()
 local parser = argparse()
   :name "multi-sync"
@@ -199,6 +199,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.]]
 
 parser:mutex(
+  -- Flags which do one thing and exit
   parser:flag "-v" "--version"
     :description "Output version information and exit"
     :action(
@@ -222,12 +223,6 @@ parser:mutex(
   parser:flag "-c" "--configure"
     :description "Configure rules"
     :target "configure",
-  parser:flag "-i" "--initialize"
-    :description "Initialize the database"
-    :target "initialize",
-  parser:flag "-l" "--list"
-    :description "List files which would be copied"
-    :target "list", 
   parser:flag "-p" "--print-history"
     :description "Print sync history"
     :target "printHistory"
@@ -237,9 +232,17 @@ parser:mutex(
     :target "forget"
     :args("+")
 )
+-- Optional flags for normal operation, even though they're not mutually-exclusive with the above options,
+-- they have no effect
 parser:flag "--verbose"
   :description "Verbose mode"
   :target "verbose"
+parser:flag "-i" "--initialize"
+  :description "Initialize the database"
+  :target "initialize"
+parser:flag "-l" "--list"
+  :description "List files which would be copied"
+  :target "list"
 parser:flag "-n" "--dry-run"
   :description "Output the final command(s), do not execute"
   :target "dryRun"
@@ -247,11 +250,7 @@ parser:argument "names"
   :args("*")
   :description "Specify rule(s) to run by name. May specify zero, one or more names"
   :target "cmdLineNames"
-
 local args = parser:parse()
-dbFile = path.join(configDir, dbFilename)
-configFile = path.join(configDir, configFilename)
-local db
 
 -- Process -p
 if args.printHistory then
@@ -298,7 +297,7 @@ end
 -- Process configFile
 myDofile(configFile) -- Good possibility of a syntax error in configFile, so handle it more gracefully than Lua's dofile()
 if not rules or not textEditor then
-  print("\nSyntax error in configFile, rules and textEditor must be specified")
+  print("Syntax error in configFile, rules and textEditor must be specified")
   os.exit(2)
 end
 
