@@ -214,8 +214,7 @@ parser:mutex(
         cur:close()
         db:close()
         env:close()
-        -- In case argparse makes the change suggested here https://github.com/mpeterv/argparse/issues/21
-        print("argparse "..argparse.version)
+        print("Argparse "..argparse.version)
         print("Penlight "..utils._VERSION)
         os.exit(0)
       end
