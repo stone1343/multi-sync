@@ -7,7 +7,9 @@ To install in Linux:
 * git clone https://github.com/stone1343/multi-sync.git
 * cd multi-sync
 * sudo ./install /usr/local
+
 or
+
 * ./install ~/.local
 * cd ..
 * rm -rf multi-sync
