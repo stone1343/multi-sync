@@ -35,8 +35,9 @@
 --        2020-12 06 JMS Fix defect with cmdSyntax
 -- v3.2   2021-01-03 JMS Linux INSTALLDIR is /usr/local/share/multi-sync, following the FHS better
 --                       --verbose replaces --debug command line option, there's no short version of --verbose
+-- v3.2.1 2021-06-11 JMS Allow install to ~/.local or /usr/local (or any other location but YMMV)
 
-local multisync_version = "3.2"
+local multisync_version = "3.2.1"
 -- To update copyright date (e.g. 2018-2021), see epilog below
 
 -- These will fail if not found but the alternative isn't much better
