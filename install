@@ -1,13 +1,22 @@
 #!/bin/bash
-# install v3.2 2021-01-03
+# install v3.2.1 2021-06-11
 
-if [ $EUID -ne 0 ]; then
-  echo "This must be run as root" >&2
-  set -e
+if [ -z "$1" ] || [ ! -d "$1" ]; then
+  echo Usage:
+  echo " ./install installdir"
+  echo "  e.g."
+  echo "   sudo ./install /usr/local"
+  echo "  or"
+  echo "   ./install ~/.local"
+  echo "  installdir must exist"
   exit 1
 fi
+if [ $EUID -ne 0 ]; then
+  USER_HOME=$HOME
+else
+  USER_HOME=$(getent passwd $SUDO_USER | cut -d: -f6)
+fi
 # Check pre-reqs
-USER_HOME=$(getent passwd $SUDO_USER | cut -d: -f6)
 lua=$(which lua5.4)
 if [ ! -z $lua ]; then
   export LUA_PATH="$USER_HOME/.luarocks/share/lua/5.4/?.lua;;"
@@ -34,13 +43,12 @@ if [ $? -ne 0 ]; then
   echo "Pre-reqs not installed"
   exit 1
 fi
-[ ! -d /usr/local/bin ] && mkdir -p /usr/local/bin
-install -m 755 linux/multi-sync /usr/local/bin
-INSTALLDIR=/usr/local/share/multi-sync
-[ ! -d $INSTALLDIR ] && mkdir -p $INSTALLDIR
-install -m 644 multi-sync.lua $INSTALLDIR
-install -m 644 linux/multi-sync-config.lua $INSTALLDIR
-install -m 644 linux/multi-sync.sqlite3 $INSTALLDIR
-if [ -f /usr/local/bin/multi-sync ] && [ -f $INSTALLDIR/multi-sync.lua ] && [ -f $INSTALLDIR/multi-sync-config.lua ] && [ -f $INSTALLDIR/multi-sync.sqlite3 ]; then
+[ ! -d $1/bin ] && mkdir -p $1/bin
+install -m 755 linux/multi-sync $1/bin
+[ ! -d $1/share/multi-sync ] && mkdir -p $1/share/multi-sync
+install -m 644 multi-sync.lua $1/share/multi-sync
+install -m 644 linux/multi-sync-config.lua $1/share/multi-sync
+install -m 644 linux/multi-sync.sqlite3 $1/share/multi-sync
+if [ -f $1/bin/multi-sync ] && [ -f $1/share/multi-sync/multi-sync.lua ] && [ -f $1/share/multi-sync/multi-sync-config.lua ] && [ -f $1/share/multi-sync/multi-sync.sqlite3 ]; then
   echo "multi-sync installed"
 fi
