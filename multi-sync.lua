@@ -36,8 +36,9 @@
 -- v3.2   2021-01-03 JMS Linux INSTALLDIR is /usr/local/share/multi-sync, following the FHS better
 --                       --verbose replaces --debug command line option, there's no short version of --verbose
 -- v3.2.1 2021-06-11 JMS Allow install to ~/.local or /usr/local (or any other location but YMMV)
+-- v3.3   2021-11-01 JMS Added functions noRulesSpecified() and thisRuleSpecified for use in config file
 
-local multisync_version = "3.2.1"
+local multisync_version = "3.3"
 -- To update copyright date (e.g. 2018-2021), see epilog below
 
 -- These will fail if not found but the alternative isn't much better
@@ -58,13 +59,23 @@ function isFile(filespec)
   return (path.attrib(filespec, "mode") == "file")
 end
 
--- Another function defined for use in the config file
+-- Another function for use in config file, typically for use in Post routine to copy the database
 function copyFile(src, dest)
   if path.isdir(dest) then
     file.copy(src, dest)
   else
     print("\ncopyFile requires dest to be an existing directory")
   end
+end
+
+-- For use in config file, though I can't imagine the use case
+function noRulesSpecified()
+  return (tablex.size(args.cmdLineNames) == 0)
+end
+
+-- For use in config file, typically for 'expression = "thisRuleSpecified()"'
+function thisRuleSpecified()
+  return (name and tablex.find(args.cmdLineNames, name))
 end
 
 -- Use a function to determine if two filespecs point to the same file
@@ -253,7 +264,7 @@ parser:argument "names"
   :target "cmdLineNames"
   -- Zero, one or more arguments = names to process
   :args("*")
-local args = parser:parse()
+args = parser:parse()
 
 -- Process -p
 if args.printHistory then
@@ -386,7 +397,7 @@ for i, rule in pairs(rules) do
   if cmd == "" then cmd = nil end
   syntax = rule.cmdSyntax and rule.cmdSyntax or cmdSyntax
   if syntax == "" then syntax = nil end
-  if (tablex.size(args.cmdLineNames) == 0) or (name and tablex.find(args.cmdLineNames, name)) then
+  if (noRulesSpecified()) or (thisRuleSpecified()) then
     if not expression or load("return("..string.gsub(expression, "\\", "\\\\")..")")() then
       if cmd and syntax then
         if src and dest then

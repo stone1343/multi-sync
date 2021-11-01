@@ -1,7 +1,4 @@
 @echo off
-rem install.bat v3.2 2021-01-03
-
-setlocal
 
 if "%1"=="" (
   goto :help

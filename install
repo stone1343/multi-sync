@@ -1,5 +1,4 @@
-#!/bin/bash
-# install v3.2.1 2021-06-11
+#!/usr/bin/env bash
 
 if [ -z "$1" ] || [ ! -d "$1" ]; then
   echo Usage:
@@ -19,18 +18,15 @@ fi
 # Check pre-reqs
 lua=$(which lua5.4)
 if [ ! -z $lua ]; then
-  export LUA_PATH="$USER_HOME/.luarocks/share/lua/5.4/?.lua;;"
-  export LUA_CPATH="$USER_HOME/.luarocks/lib/lua/5.4/?.so;;"
+  luav=5.4
 else
   lua=$(which lua5.3)
   if [ ! -z $lua ]; then
-    export LUA_PATH="$USER_HOME/.luarocks/share/lua/5.3/?.lua;;"
-    export LUA_CPATH="$USER_HOME/.luarocks/lib/lua/5.3/?.so;;"
+    luav=5.3
   else
     lua=$(which lua5.2)
     if [ ! -z $lua ]; then
-      export LUA_PATH="$USER_HOME/.luarocks/share/lua/5.2/?.lua;;"
-      export LUA_CPATH="$USER_HOME/.luarocks/lib/lua/5.2/?.so;;"
+      luav=5.2
     fi
   fi
 fi
@@ -38,6 +34,8 @@ if [ -z $lua ]; then
   echo "Lua not found"
   exit 1
 fi
+export LUA_PATH="$USER_HOME/.luarocks/share/lua/$luav/?.lua;;"
+export LUA_CPATH="$USER_HOME/.luarocks/lib/lua/$luav/?.so;;"
 lua check-prereqs.lua
 if [ $? -ne 0 ]; then
   echo "Pre-reqs not installed"

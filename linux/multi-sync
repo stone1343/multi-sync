@@ -1,23 +1,21 @@
-#!/bin/bash
-# multi-sync v3.2.1 2021-06-11
+#!/usr/bin/env bash
 
 lua=$(which lua5.4)
 if [ ! -z $lua ]; then
-  export LUA_PATH="$HOME/.luarocks/share/lua/5.4/?.lua;;"
-  export LUA_CPATH="$HOME/.luarocks/lib/lua/5.4/?.so;;"
+  luav=5.4
 else
   lua=$(which lua5.3)
   if [ ! -z $lua ]; then
-    export LUA_PATH="$HOME/.luarocks/share/lua/5.3/?.lua;;"
-    export LUA_CPATH="$HOME/.luarocks/lib/lua/5.3/?.so;;"
+    luav=5.3
   else
     lua=$(which lua5.2)
     if [ ! -z $lua ]; then
-      export LUA_PATH="$HOME/.luarocks/share/lua/5.2/?.lua;;"
-      export LUA_CPATH="$HOME/.luarocks/lib/lua/5.2/?.so;;"
+      luav=5.2
     fi
   fi
 fi
+export LUA_PATH="$HOME/.luarocks/share/lua/$luav/?.lua;;"
+export LUA_CPATH="$HOME/.luarocks/lib/lua/$luav/?.so;;"
 # From https://stackoverflow.com/questions/59895/how-can-i-get-the-source-directory-of-a-bash-script-from-within-the-script-itsel 2021-06-11
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 INSTALLDIR="${SCRIPTDIR}/../share/multi-sync"

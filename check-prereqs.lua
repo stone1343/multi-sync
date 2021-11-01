@@ -1,4 +1,3 @@
--- check-prereqs v3.2 2021-01-03
 
 function prequire(...)
   return pcall(require, ...)
