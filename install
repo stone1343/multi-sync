@@ -50,7 +50,7 @@ install -m 755 linux/multi-sync $1/bin
 [ ! -d $1/share/multi-sync ] && mkdir -p $1/share/multi-sync
 install -m 644 multi-sync.lua $1/share/multi-sync
 install -m 644 linux/multi-sync-config.lua $1/share/multi-sync
-install -m 644 linux/multi-sync.sqlite3 $1/share/multi-sync
+[ ! -f $1/share/multi-sync/multi-sync.sqlite3 ] && install -m 644 linux/multi-sync.sqlite3 $1/share/multi-sync
 if [ -f $1/bin/multi-sync ] && [ -f $1/share/multi-sync/multi-sync.lua ] && [ -f $1/share/multi-sync/multi-sync-config.lua ] && [ -f $1/share/multi-sync/multi-sync.sqlite3 ]; then
   echo "multi-sync installed"
 fi
