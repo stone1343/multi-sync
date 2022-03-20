@@ -378,8 +378,8 @@ for i, rule in pairs(rules) do
       -- No rules specified                     or this rule specified
       if ((tablex.size(args.cmdLineNames) == 0) or (name and tablex.find(args.cmdLineNames, name))) then
         if not expression or load('return('..string.gsub(expression, '\\', '\\\\')..')')() then
-          options = rule.options and rule.options or ''
           if path.is_windows then
+            options = rule.options and rule.options or '/njh /ndl /njs /r:2 /w:2 /xjd'
             if args.list then
               options = options..' /l'
             end
@@ -389,6 +389,7 @@ for i, rule in pairs(rules) do
               cmd = 'robocopy "'..src..'" "'..dest..'" '..options
             end
           else
+            options = rule.options and rule.options or ''
             syncMode = rule.syncMode and rule.syncMode or 'a'
             if args.list then
               syncMode = '-nv'..syncMode
