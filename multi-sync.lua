@@ -140,7 +140,7 @@ function printHistory(db, rowid)
   for i = 1, 5 do
     maxlen[i]= math.max(maxlen[i], string.len(headers[i]))
   end
-  local cur = executeSQL(db, string.format([[select rowid, src, dest, datetime(utc, 'localtime'), rc from sync_history %s order by rowid;', rowid and ' where rowid=]]..rowid))
+  local cur = executeSQL(db, string.format([[select rowid, src, dest, datetime(utc, 'localtime'), rc from sync_history %s order by rowid;]], rowid and ' where rowid='..rowid))
   local row = cur:fetch({})
   while row do
     n = n + 1
