@@ -5,12 +5,12 @@
 -- v1.1.1 2016-10-25 JMS When outputting 'Latest successful sync', also output if the rule has never been synced
 -- v1.1.2 2016-10-27 JMS Bugfix, cmd and options must be global
 -- v1.2   2016-10-30 JMS List files modified since last sync
--- v1.2.1 2016-10-31 JMS Move the "list files modified since last sync" code to where it can also run if dest doesn't exist
+-- v1.2.1 2016-10-31 JMS Move the 'list files modified since last sync' code to where it can also run if dest doesn't exist
 -- v1.2.2 2016-12-17 JMS Tolerate null attr from Google Drive
 -- v1.2.3 2017-05-13 JMS Added --version flag, including Lua and library versions
 --        2017-06-05 JMS Handle syntax error(s) in multi-sync-config.lua more gracefully, fairly significant re-structuring
 -- v1.3   2017-09-20 JMS Various enhancements, code merge
--- v2.0   2017-10-15 JMS "Dry Run" just outputs the final command(s) without executing anything
+-- v2.0   2017-10-15 JMS 'Dry Run' just outputs the final command(s) without executing anything
 --                       Name and expression are optional; cmd, options, cmdSyntax and rules are not
 --        2017-10-20 JMS Added --list flag, removed options
 --        2017-10-25 JMS Added --print-history flag
@@ -37,26 +37,27 @@
 --                       --verbose replaces --debug command line option, there's no short version of --verbose
 -- v3.2.1 2021-06-11 JMS Allow install to ~/.local or /usr/local (or any other location but YMMV)
 -- v3.3   2021-11-01 JMS Added functions noRulesSpecified() and thisRuleSpecified for use in config file
+-- v4.0   2022-03-20 JMS Re-design configFile, now only supporting rsync and robocopy
 
-local multisync_version = "3.3"
--- To update copyright date (e.g. 2018-2021), see epilog below
+local multisync_version = '4.0'
+-- To update copyright date (e.g. 2018-2022), see epilog below
 
 -- These will fail if not found but the alternative isn't much better
-local lfs = require "lfs"
-local luasql = require "luasql.sqlite3"
-local argparse = require "argparse"
-local file = require "pl.file"
-local path = require "pl.path"
-local tablex = require "pl.tablex"
-local utils = require "pl.utils"
+lfs = require 'lfs'
+luasql = require 'luasql.sqlite3'
+argparse = require 'argparse'
+file = require 'pl.file'
+path = require 'pl.path'
+tablex = require 'pl.tablex'
+utils = require 'pl.utils'
 
 -- Similar to path.isdir() and path.isfile(), but defined for use in the config file
 function isDir(filespec)
-  return (path.attrib(filespec, "mode") == "directory")
+  return (path.attrib(filespec, 'mode') == 'directory')
 end
 
 function isFile(filespec)
-  return (path.attrib(filespec, "mode") == "file")
+  return (path.attrib(filespec, 'mode') == 'file')
 end
 
 -- Another function for use in config file, typically for use in Post routine to copy the database
@@ -64,18 +65,8 @@ function copyFile(src, dest)
   if path.isdir(dest) then
     file.copy(src, dest)
   else
-    print("\ncopyFile requires dest to be an existing directory")
+    print('\ncopyFile requires dest to be an existing directory')
   end
-end
-
--- For use in config file, though I can't imagine the use case
-function noRulesSpecified()
-  return (tablex.size(args.cmdLineNames) == 0)
-end
-
--- For use in config file, typically for 'expression = "thisRuleSpecified()"'
-function thisRuleSpecified()
-  return (name and tablex.find(args.cmdLineNames, name))
 end
 
 -- Use a function to determine if two filespecs point to the same file
@@ -90,13 +81,13 @@ end
 
 function replaceEnvironmentVariables(str)
   if not path.is_windows then
-    str = string.gsub(str, "~", os.getenv("HOME"))
+    str = string.gsub(str, '~', os.getenv('HOME'))
   end
-  return string.gsub(string.gsub(str, "{computername}", computerName), "{username}", userName)
+  return string.gsub(string.gsub(str, '{computername}', computerName), '{username}', userName)
 end
 
 function crlf()
-  print("")
+  print('')
 end
 
 -- Reference: https://www.gammon.com.au/scripts/doc.php?lua=dofile
@@ -110,23 +101,21 @@ function myDofile(fileName)
 end
 
 -- None of the parameters are required
-function printRule(name, expression, src, dest, cmd, syntax, actualCmd)
+function printRule(name, expression, src, dest, cmd)
   -- formatString works like C sprintf, -12 indicates the field is 12 characters wide and left-justified
-  local formatString = "%-12s  %s"
-  if name then print(string.format(formatString, "name", name)) end
-  if expression then print(string.format(formatString, "expression", expression)) end
-  if src then print(string.format(formatString, "src", src)) end
-  if dest then print(string.format(formatString, "dest", dest)) end
-  if cmd then print(string.format(formatString, "cmd", cmd)) end
-  if syntax then print(string.format(formatString, "syntax", syntax)) end
-  if actualCmd then print(string.format(formatString, "actualCmd", actualCmd)) end
+  local formatString = '%-12s  %s'
+  if name then print(string.format(formatString, 'name', name)) end
+  if expression then print(string.format(formatString, 'expression', expression)) end
+  if src then print(string.format(formatString, 'src', src)) end
+  if dest then print(string.format(formatString, 'dest', dest)) end
+  if cmd then print(string.format(formatString, 'cmd', cmd)) end
 end
 
 -- A function to execute SQL statement and exit if it fails
 function executeSQL(db, SQL)
   local cur, err = db:execute(SQL)
   if not cur then
-    print(string.format("SQL failed\n %s%s", SQL, err and "\n"..err))
+    print(string.format('SQL failed\n %s%s', SQL, err and '\n'..err))
     db:close()
     env:close()
     os.exit(2)
@@ -136,22 +125,22 @@ end
 
 function lastSync(db, src, dest)
   -- Display the info in the database, there will only ever be zero or one record(s) due to constraint
-  local cur = executeSQL(db, string.format("select datetime(utc, 'localtime') as timestamp, rc from sync_history where src='%s' and dest='%s'", src, dest))
-  local row = cur:fetch({}, "a")
-  print("\nLast sync: "..(row and (row.timestamp..", rc = "..row.rc) or "never"))
+  local cur = executeSQL(db, string.format([[select datetime(utc, 'localtime') as timestamp, rc from sync_history where src='%s' and dest='%s']], src, dest))
+  local row = cur:fetch({}, 'a')
+  print('\nLast sync: '..(row and (row.timestamp..', rc = '..row.rc) or 'never'))
   cur:close()
 end
 
 -- Seems much more complicated than necessary, but it works
 function printHistory(db, rowid)
-  local headers = {"rowid", "src", "dest", "timestamp", "rc"}
+  local headers = {'rowid', 'src', 'dest', 'timestamp', 'rc'}
   local n = 0
   local rows = {}
   local maxlen = {0, 0, 0, 0, 0}
   for i = 1, 5 do
     maxlen[i]= math.max(maxlen[i], string.len(headers[i]))
   end
-  local cur = executeSQL(db, string.format("select rowid, src, dest, datetime(utc, 'localtime'), rc from sync_history %s order by rowid;", rowid and " where rowid="..rowid))
+  local cur = executeSQL(db, string.format([[select rowid, src, dest, datetime(utc, 'localtime'), rc from sync_history %s order by rowid;', rowid and ' where rowid=]]..rowid))
   local row = cur:fetch({})
   while row do
     n = n + 1
@@ -164,19 +153,19 @@ function printHistory(db, rowid)
   end
   cur:close()
   if n > 0 then
-    local formatString = "%-"..maxlen[1].."s  %-"..maxlen[2].."s  %-"..maxlen[3].."s  %-"..maxlen[4].."s  %-"..maxlen[5].."s"
+    local formatString = '%-'..maxlen[1]..'s  %-'..maxlen[2]..'s  %-'..maxlen[3]..'s  %-'..maxlen[4]..'s  %-'..maxlen[5]..'s'
     -- Print the header
-    print(string.format("\n"..formatString, headers[1], headers[2], headers[3], headers[4], headers[5]))
-    print(string.rep("-", maxlen[1]).."  "..string.rep("-", maxlen[2]).."  "..string.rep("-", maxlen[3]).."  "..string.rep("-", maxlen[4]).."  "..string.rep("-", maxlen[5]))
+    print(string.format('\n'..formatString, headers[1], headers[2], headers[3], headers[4], headers[5]))
+    print(string.rep('-', maxlen[1])..'  '..string.rep('-', maxlen[2])..'  '..string.rep('-', maxlen[3])..'  '..string.rep('-', maxlen[4])..'  '..string.rep('-', maxlen[5]))
     -- Print the data
     for i = 1, n do
       print(string.format(formatString, rows[i][1], rows[i][2], rows[i][3], rows[i][4], rows[i][5]))
     end
   else
     if rowid then
-      print("No rowid "..rowid)
+      print('No rowid '..rowid)
     else
-      print("No sync history")
+      print('No sync history')
     end
   end
   return n
@@ -186,12 +175,12 @@ end
   Main begins here
 --]]
 
-local dbFilename = "multi-sync.sqlite3"
-local configFilename = "multi-sync-config.lua"
-computerName, userName = os.getenv("COMPUTERNAME"), os.getenv("USERNAME")
-local configDir = os.getenv("CONFIGDIR")
+dbFilename = 'multi-sync.sqlite3'
+configFilename = 'multi-sync-config.lua'
+computerName, userName = os.getenv('COMPUTERNAME'), os.getenv('USERNAME')
+configDir = os.getenv('CONFIGDIR')
 if (not computerName) or (not userName) or (not configDir) then
-  print("Set environment variables COMPUTERNAME, USERNAME and CONFIGDIR prior to calling Lua")
+  print('Set environment variables COMPUTERNAME, USERNAME and CONFIGDIR prior to calling Lua')
   os.exit(2)
 end
 dbFile = path.join(configDir, dbFilename)
@@ -199,10 +188,10 @@ configFile = path.join(configDir, configFilename)
 local db
 env = luasql.sqlite3()
 local parser = argparse()
-  :name "multi-sync"
-  :description "Rules-based script for using rsync, robocopy or other tool to automate backups"
+  :name 'multi-sync'
+  :description 'Rules-based script for using rsync, robocopy or other tool to automate backups'
   -- https://opensource.org/licenses/MIT
-  :epilog [[Copyright (c) 2018-2021 Jeff Stone
+  :epilog [[Copyright (c) 2018-2022 Jeff Stone
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -212,58 +201,58 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 parser:mutex(
   -- Flags which do one thing and exit
-  parser:flag "-v" "--version"
-    :description "Output version information and exit"
+  parser:flag '--version'
+    :description 'Output version information and exit'
     :action(
       function()
-        print("multi-sync "..multisync_version)
+        print('multi-sync '..multisync_version)
         print(_VERSION)
         print(lfs._VERSION)
         print(luasql._VERSION)
-        local db = env:connect(":memory:")
-        local cur = executeSQL(db, "select 'SQLite '||sqlite_version()")
+        local db = env:connect(':memory:')
+        local cur = executeSQL(db, [[select 'SQLite '||sqlite_version()]])
         print(cur:fetch())
         cur:close()
         db:close()
         env:close()
-        print("Argparse "..argparse.version)
-        print("Penlight "..utils._VERSION)
+        print('Argparse '..argparse.version)
+        print('Penlight '..utils._VERSION)
         os.exit(0)
       end
     ),
-  parser:flag "-c" "--configure"
-    :description "Configure rules"
-    :target "configure",
-  parser:flag "-p" "--print-history"
-    :description "Print sync history"
-    :target "printHistory"
+  parser:flag '-c' '--configure'
+    :description 'Configure rules'
+    :target 'configure',
+  parser:flag '-p' '--print-history'
+    :description 'Print sync history'
+    :target 'printHistory'
     -- One optional argument = location of multi-sync.sqlite3
-    :args("?"),
-  parser:option "-f" "--forget"
-    :description "Forget row(s) of sync history"
-    :target "forget"
+    :args('?'),
+  parser:option '-f' '--forget'
+    :description 'Forget row(s) of sync history'
+    :target 'forget'
     -- One or more arguments = rowid(s) to forget
-    :args("+")
+    :args('+')
 )
 -- Optional flags for normal operation
 -- Even though they're not mutually-exclusive with the above flags, these would have no effect
-parser:flag "--verbose"
-  :description "Verbose mode"
-  :target "verbose"
-parser:flag "-i" "--initialize"
-  :description "Initialize the database"
-  :target "initialize"
-parser:flag "-l" "--list"
-  :description "List files which would be copied"
-  :target "list"
-parser:flag "-n" "--dry-run"
-  :description "Output the final command(s), do not execute"
-  :target "dryRun"
-parser:argument "names"
-  :description "Specify rule(s) to run by name. May specify zero, one or more names"
-  :target "cmdLineNames"
+parser:flag '-v' '--verbose'
+  :description 'Verbose mode'
+  :target 'verbose'
+parser:flag '-i' '--initialize'
+  :description 'Initialize the database'
+  :target 'initialize'
+parser:flag '-l' '--list'
+  :description 'List files which would be copied'
+  :target 'list'
+parser:flag '-n' '--dry-run'
+  :description 'Output the final command(s), do not execute'
+  :target 'dryRun'
+parser:argument 'names'
+  :description 'Specify rule(s) to run by name. May specify zero, one or more names'
+  :target 'cmdLineNames'
   -- Zero, one or more arguments = names to process
-  :args("*")
+  :args('*')
 args = parser:parse()
 
 -- Process -p
@@ -278,11 +267,11 @@ if args.printHistory then
     elseif isFile(path.join(dbArgument, dbFilename)) then
       dbFile = path.join(dbArgument, dbFilename)
     else
-      print("print-history argument must specify multi-sync.sqlite3 or a directory containing it")
+      print('print-history argument must specify multi-sync.sqlite3 or a directory containing it')
     end
   end
   if dbFile then
-    print("Printing sync history from "..dbFile)
+    print('Printing sync history from '..dbFile)
     db = env:connect(dbFile)
     printHistory(db)
     db:close()
@@ -297,30 +286,32 @@ if args.forget then
     local f = tonumber(args.forget[i])
     if f then
       if printHistory(db, f) == 1 then
-        executeSQL(db, "delete from sync_history where rowid="..f)
-        print("Deleted rowid "..f)
+        executeSQL(db, 'delete from sync_history where rowid='..f)
+        print('Deleted rowid '..f)
       end
     else
-      print("Ignoring non-numeric "..args.forget[i])
+      print('Ignoring non-numeric '..args.forget[i])
     end
   end
   db:close()
   os.exit(0)
 end
 
--- Process configFile
-myDofile(configFile) -- Good possibility of a syntax error in configFile, so handle it more gracefully than Lua's dofile()
-if not rules or not textEditor then
-  print("Syntax error in configFile, rules and textEditor must be specified")
-  os.exit(2)
-end
-
 -- Process -c
 if args.configure then
-  if path.isfile(configFile) then
-    os.execute(textEditor.." "..configFile)
+  if path.is_windows then
+    os.execute('notepad '..configFile)
+  else
+    os.execute('editor '..configFile)
   end
   os.exit(0)
+end
+
+-- Process configFile
+myDofile(configFile) -- Good possibility of a syntax error in configFile, so handle it more gracefully than Lua's dofile()
+if not rules then
+  print('Syntax error in configFile, rules must be specified')
+  os.exit(2)
 end
 
 db = env:connect(dbFile)
@@ -328,8 +319,8 @@ db = env:connect(dbFile)
 -- Process -i
 if args.initialize then
   -- This one can't use executeSQL because it is guaranteed to fail the first time since the table doesn't exist
-  db:execute("drop table sync_history")
-  -- Windows file systems aren't case-sensitive so the database that keeps track shouldn't be either, use "collate nocase" for src and dest
+  db:execute('drop table sync_history')
+  -- Windows file systems aren't case-sensitive so the database that keeps track shouldn't be either, use 'collate nocase' for src and dest
   if path.is_windows then
     executeSQL(db, [[
       create table sync_history(
@@ -359,120 +350,99 @@ if pre then
   if func then
     pcall(func)
   else
-    print("\nCompilation error in pre:", err)
+    print('\nCompilation error in pre:', err)
   end
 end
 
 -- Process rules
 local exitRC
 for i, rule in pairs(rules) do
-  -- NQ "no quotes" versions of src and dest
-  local srcNQ, destNQ
   -- Evaluate the rule
   name = rule.name
-  if name == "" then name = nil end
+  if name == '' then name = nil end
   expression = rule.expression
-  if expression == "" then expression = nil end
+  if expression == '' then expression = nil end
   if expression then expression = replaceEnvironmentVariables(expression) end
   src = rule.src
-  if src == "" then src = nil end
+  if src == '' then src = nil end
   if src then
     src = replaceEnvironmentVariables(src)
-    srcNQ = src
-    if string.find(src, " ") then src=[["]]..src..[["]] end
   end
   dest = rule.dest
-  if dest == "" then dest = nil end
+  if dest == '' then dest = nil end
   if dest then
     dest = replaceEnvironmentVariables(dest)
-    destNQ = dest
-    if string.find(dest, " ") then dest=[["]]..dest..[["]] end
   end
-  -- Get these from the rule or the defaults
-  if args.list then
-    cmd = rule.listCmd and rule.listCmd or listCmd
-  else
-    cmd = rule.syncCmd and rule.syncCmd or syncCmd
-  end
-  if cmd == "" then cmd = nil end
-  syntax = rule.cmdSyntax and rule.cmdSyntax or cmdSyntax
-  if syntax == "" then syntax = nil end
-  if (noRulesSpecified()) or (thisRuleSpecified()) then
-    if not expression or load("return("..string.gsub(expression, "\\", "\\\\")..")")() then
-      if cmd and syntax then
-        if src and dest then
-          if not isSameFilespec(srcNQ, destNQ) then
-            local actualCmd = load("return("..syntax..")")()
-            if path.isdir(srcNQ) or path.isfile(srcNQ) then
-              if path.isdir(destNQ) then
-                crlf()
-                if args.verbose then
-                  printRule(name, expression, src, dest, cmd, syntax, actualCmd)
-                else
-                  printRule(name, expression, src, dest, nil, nil, actualCmd)
-                end
-                if not args.dryRun then
-                  local handler = io.popen(actualCmd)
-                  local stdout = handler:read("*a")
-                  local dummy, err, rc = handler:close()
-                  if string.len(stdout) ~= 0 then
-                    print("\n"..stdout)
-                  end
-                  if rc ~= 0 then
-                    print("rc = "..rc)
-                    print(err)
-                    exitRC = 1
-                  end
-                  if not args.list then executeSQL(db, string.format("insert or replace into sync_history (src, dest, utc, rc) values('%s', '%s', datetime('now'), '%d')", src, dest, rc)) end
-                end
-                lastSync(db, src, dest)
-              else
-                if args.verbose then
-                  crlf();
-                  printRule(name, expression, src, dest)
-                  print("\nRule skipped because dest does not exist")
-                  lastSync(db, src, dest)
-                end
-              end
+  if src and dest and (not isSameFilespec(src, dest)) then
+    if (path.isdir(src) or path.isfile(src)) and path.isdir(dest) then
+      -- No rules specified                     or this rule specified
+      if ((tablex.size(args.cmdLineNames) == 0) or (name and tablex.find(args.cmdLineNames, name))) then
+        if not expression or load('return('..string.gsub(expression, '\\', '\\\\')..')')() then
+          options = rule.options and rule.options or ''
+          if path.is_windows then
+            if args.list then
+              options = options..' /l'
+            end
+            if path.isfile(src) then
+              cmd = 'robocopy "'..path.dirname(src)..'" "'..dest..'" "'..path.basename(src)..'" '..options
             else
-              if args.verbose then
-                crlf()
-                printRule(name, expression, src, dest)
-                print("\nRule skipped because src does not exist")
-                lastSync(db, src, dest)
-              end
+              cmd = 'robocopy "'..src..'" "'..dest..'" '..options
             end
           else
-            -- This is a config issue, should always be displayed
+            syncMode = rule.syncMode and rule.syncMode or 'a'
+            if args.list then
+              syncMode = '-nv'..syncMode
+            else
+              syncMode = '-q'..syncMode
+            end
+            cmd = 'sudo rsync '..syncMode..' '..options..' "'..src..'" "'..dest..'"'
+          end
+          crlf()
+          printRule(name, expression, src, dest, cmd)
+          if (not args.dryRun) then
+            local handler = io.popen(cmd)
+            local stdout = handler:read('*a')
+            local dummy, err, rc = handler:close()
+            if string.len(stdout) ~= 0 then
+              print('\n'..stdout)
+            end
+            if rc ~= 0 then
+              print('rc = '..rc)
+              print(err)
+              exitRC = 1
+            end
+            if not args.list then executeSQL(db, string.format([[insert or replace into sync_history (src, dest, utc, rc) values('%s', '%s', datetime('now'), '%d')]], src, dest, rc)) end
+          end
+          lastSync(db, src, dest)
+        else
+          if args.verbose then
             crlf()
             printRule(name, expression, src, dest)
-            print("\nRule skipped because src and dest are the same")
+            print('\nRule skipped because of expression')
           end
-        else
-          -- This is a config issue, should always be displayed
-          crlf()
-          printRule(name, expression, src, dest)
-          print("\nRule skipped because src and/or dest are not specified")
         end
       else
-        -- This is a config issue, should always be displayed
-       crlf()
-        printRule(name, expression, src, dest, cmd, syntax)
-        print("\nRule skipped because cmd and/or syntax are nil")
+        if args.verbose then
+          crlf();
+          printRule(name, expression, src, dest)
+          print('\nRule skipped because of name')
+        end
       end
     else
       if args.verbose then
         crlf();
         printRule(name, expression, src, dest)
-        print("\nRule skipped because of expression")
+        print('\nRule skipped because src and/or dest does not exist')
       end
     end
   else
+    crlf();
     if args.verbose then
-      crlf();
       printRule(name, expression, src, dest)
-      print("\nRule skipped because of name")
+    else
+      printRule(nil, nil, src, dest)
     end
+    print('\nRule skipped because of config issue with src and/or dest')
   end
 end --for
 
@@ -482,7 +452,7 @@ if post then
   if func then
     pcall(func)
   else
-    print("\nCompilation error in post:", err)
+    print('\nCompilation error in post:', err)
   end
 end
 
