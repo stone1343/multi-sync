@@ -379,14 +379,14 @@ for i, rule in pairs(rules) do
       if ((tablex.size(args.cmdLineNames) == 0) or (name and tablex.find(args.cmdLineNames, name))) then
         if not expression or load('return('..string.gsub(expression, '\\', '\\\\')..')')() then
           if path.is_windows then
-            options = rule.options and rule.options or '/mir /njh /ndl /njs /r:2 /w:2 /xjd'
+            options = rule.options and rule.options or '/njh /ndl /njs /r:2 /w:2 /xjd'
             if args.list then
               options = options..' /l'
             end
             if path.isfile(src) then
               cmd = 'robocopy "'..path.dirname(src)..'" "'..dest..'" "'..path.basename(src)..'" '..options
             else
-              cmd = 'robocopy "'..src..'" "'..dest..'" '..options
+              cmd = 'robocopy "'..src..'" "'..dest..'" /mir '..options
             end
           else
             options = rule.options and rule.options or ''
