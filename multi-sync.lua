@@ -390,13 +390,24 @@ for i, rule in pairs(rules) do
             end
           else
             options = rule.options and rule.options or ''
-            syncMode = rule.syncMode and rule.syncMode or 'a'
-            if args.list then
-              syncMode = '-nv'..syncMode
+            -- With this logic, it defaults to 'false'
+            --linuxFilesystem = rule.linuxFilesystem and rule.linuxFilesystem or false
+            -- Due to how nil also evaluates to false, it's impossible to default linuxFilesystem to true, so instead have the config setting be 'notLinuxFilesystem' and do something that looks really weird:
+            linuxFilesystem = (not rule.notLinuxFilesystem)
+            print('\nName '..name..' '..tostring(linuxFilesystem))
+            cmd = 'rsync'
+            if linuxFilesystem then
+              cmd = 'sudo '..cmd
+              options = 'a '..options
             else
-              syncMode = '-q'..syncMode
+              options = 'rt --modify-window=2 '..options
             end
-            cmd = 'sudo rsync '..syncMode..' '..options..' "'..src..'" "'..dest..'"'
+            if args.list then
+              options = ' -nv'..options
+            else
+              options = ' -q'..options
+            end
+            cmd = cmd..options..' "'..src..'" "'..dest..'"'
           end
           crlf()
           printRule(name, expression, src, dest, cmd)
