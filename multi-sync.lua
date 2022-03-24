@@ -390,11 +390,11 @@ for i, rule in pairs(rules) do
             end
           else
             options = rule.options and rule.options or ''
-            -- With this logic, it defaults to 'false'
+            -- This logic defaults to 'false'
             --linuxFilesystem = rule.linuxFilesystem and rule.linuxFilesystem or false
-            -- Due to how nil also evaluates to false, it's impossible to default linuxFilesystem to true, so instead have the config setting be 'notLinuxFilesystem' and do something that looks really weird:
+            -- Due to how nil also evaluates to false in Lua, it's impossible to default linuxFilesystem to true, so instead have the config setting be 'notLinuxFilesystem' and do something that looks really weird:
             linuxFilesystem = (not rule.notLinuxFilesystem)
-            print('\nName '..name..' '..tostring(linuxFilesystem))
+            --print('\nName '..name..' '..tostring(linuxFilesystem))
             cmd = 'rsync'
             if linuxFilesystem then
               cmd = 'sudo '..cmd
