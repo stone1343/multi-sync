@@ -3,16 +3,35 @@
 Rule-driven synchronization for Windows and Linux
  
 To install in Linux:
-* cd
-* git clone https://github.com/stone1343/multi-sync.git
-* cd multi-sync
-* sudo ./install /usr/local
 
-or
-
-* ./install ~/.local
-* cd ..
-* rm -rf multi-sync
+```bash
+# Install Lua, SQLite
+sudo apt install build-essential libreadline-dev unzip git lua5.4 liblua5.4-dev sqlite3 libsqlite3-dev
+# Install Luarocks 3.8.0 (or check for newer)
+cd ~/Downloads
+[ -d luarocks-3.8.0 ] && rm -rf luarocks-3.8.0
+[ -f luarocks-3.8.0.tar.gz ] && rm luarocks-3.8.0.tar.gz
+wget https://luarocks.org/releases/luarocks-3.8.0.tar.gz
+tar xf luarocks-3.8.0.tar.gz
+cd luarocks-3.8.0
+./configure --lua-version=5.4
+make
+sudo make install
+# Install required rocks
+cd ~/Downloads
+[ -f luasql-sqlite3-2.6.0-1.rockspec ] && rm luasql-sqlite3-2.6.0-1.rockspec
+wget https://luarocks.org/manifests/tomasguisasola/luasql-sqlite3-2.6.0-1.rockspec
+sed -i 's/url = "git:/url = "git+https:/g' luasql-sqlite3-2.6.0-1.rockspec
+sudo luarocks install luasql-sqlite3-2.6.0-1.rockspec
+sudo luarocks install luafilesystem
+sudo luarocks install argparse
+sudo luarocks install penlight
+# Install multi-sync
+cd ~/Downloads
+[ -d multi-sync ] && rm -rf multi-sync
+git clone https://github.com/stone1343/multi-sync.git
+cd multi-sync
+sudo ./install
 
 To install in Windows
 * Download .zip from https://github.com/stone1343/multi-sync
