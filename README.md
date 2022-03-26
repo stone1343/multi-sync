@@ -32,13 +32,14 @@ cd ~/Downloads
 git clone https://github.com/stone1343/multi-sync.git
 cd multi-sync
 sudo ./install
+```
 
 To install in Windows
 * Download .zip from https://github.com/stone1343/multi-sync
 * Unzip the .zip
 * In Command Prompt, cd to the multi-sync directory
 * Use install.bat to install it, must specify a directory, for example you could use %USERPROFILE%\bin
-  * install %USERPROFILE%\bin
+  install %USERPROFILE%\bin
 
 multi-sync is controlled by a config file, which is literally a Lua script, here's a sample:
 
