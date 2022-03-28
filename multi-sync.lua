@@ -396,11 +396,14 @@ for i, rule in pairs(rules) do
             linuxFilesystem = (not rule.notLinuxFilesystem)
             --print('\nName '..name..' '..tostring(linuxFilesystem))
             cmd = 'rsync'
+            if options ~= '' then
+              options = ' '..options
+            end
             if linuxFilesystem then
               cmd = 'sudo '..cmd
-              options = 'a '..options
+              options = 'a'..options
             else
-              options = 'rt --modify-window=2 '..options
+              options = 'rt --modify-window=2'..options
             end
             if args.list then
               options = ' -nv'..options
