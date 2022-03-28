@@ -382,6 +382,8 @@ for i, rule in pairs(rules) do
             options = rule.options and rule.options or '/njh /ndl /njs /r:2 /w:2 /xjd'
             if args.list then
               options = options..' /l'
+            else
+              options = options..' /nfl'
             end
             if path.isfile(src) then
               cmd = 'robocopy "'..path.dirname(src)..'" "'..dest..'" "'..path.basename(src)..'" '..options
