@@ -407,7 +407,7 @@ for i, rule in pairs(rules) do
             else
               options = ' -q'..options
             end
-            cmd = cmd..options..' "'..src..'" "'..dest..'"'
+            cmd = cmd..options..' --delete "'..src..'" "'..dest..'"'
           end
           crlf()
           printRule(name, expression, src, dest, cmd)
