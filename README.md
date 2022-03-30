@@ -2,12 +2,13 @@
 
 Rule-driven synchronization for Windows and Linux
  
-To install in Linux:
+To install in Ubuntu-based Linux, using current versions as of 2022-04-01:
 
 ```bash
-# Install Lua, SQLite
+# Install Lua, SQLite, other pre-reqs
 sudo apt install build-essential libreadline-dev unzip git lua5.4 liblua5.4-dev sqlite3 libsqlite3-dev
-# Install Luarocks 3.8.0 (or check for newer)
+
+# Install LuaRocks 3.8.0 (or check for newer)
 cd ~/Downloads
 [ -d luarocks-3.8.0 ] && rm -rf luarocks-3.8.0
 [ -f luarocks-3.8.0.tar.gz ] && rm luarocks-3.8.0.tar.gz
@@ -18,6 +19,7 @@ cd luarocks-3.8.0
 make
 sudo make install
 # Install required rocks
+# Due to https://githubhot.com/repo/keplerproject/luasql/issues/136, currently need to patch the LuaSQL rockspec
 cd ~/Downloads
 [ -f luasql-sqlite3-2.6.0-1.rockspec ] && rm luasql-sqlite3-2.6.0-1.rockspec
 wget https://luarocks.org/manifests/tomasguisasola/luasql-sqlite3-2.6.0-1.rockspec
@@ -36,12 +38,12 @@ sudo ./install
 
 To install in Windows
 * Download .zip from https://github.com/stone1343/multi-sync
-* Unzip the .zip
+* Unzip it
 * In Command Prompt, cd to the multi-sync directory
 * Use install.bat to install it, must specify a directory, for example you could use %USERPROFILE%\bin
   install %USERPROFILE%\bin
 
-multi-sync is controlled by a config file, which is literally a Lua script, here's a sample:
+multi-sync is controlled by a config file, here's a sample:
 
 ```lua
 --[=[
