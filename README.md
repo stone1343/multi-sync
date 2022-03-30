@@ -41,6 +41,7 @@ To install in Windows
 * Unzip it
 * In Command Prompt, cd to the multi-sync directory
 * Use install.bat to install it, must specify a directory, for example you could use %USERPROFILE%\bin
+
     install %USERPROFILE%\bin
 
 multi-sync is controlled by a config file, here's a sample:
