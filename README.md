@@ -28,21 +28,27 @@ sudo luarocks install luasql-sqlite3-2.6.0-1.rockspec
 sudo luarocks install luafilesystem
 sudo luarocks install argparse
 sudo luarocks install penlight
-# Install multi-sync
+# Install multi-sync v4.0
 cd ~/Downloads
 [ -d multi-sync ] && rm -rf multi-sync
-git clone https://github.com/stone1343/multi-sync.git
-cd multi-sync
-sudo ./install
+git clone --depth 1 --branch v4.0 https://github.com/stone1343/multi-sync.git
+if [ -d "multi-sync" ]; then
+  cd multi-sync
+  sudo ./install
+fi
 ```
 
-To install in Windows
-* Download .zip from https://github.com/stone1343/multi-sync
-* Unzip it
-* In Command Prompt, cd to the multi-sync directory
-* Use install.bat to install it, must specify a directory, for example you could use %USERPROFILE%\bin
+Install multi-sync v4.0 to %USERPROFILE%\bin in Windows
 
-    install %USERPROFILE%\bin
+```
+cd %USERPROFILE%\Downloads
+if exist multi-sync-4.0.zip del multi-sync-4.0.zip
+curl -L -o multi-sync-4.0.zip http://github.com/stone1343/multi-sync/archive/refs/tags/v4.0.zip
+if exist multi-sync-4.0\. rmdir /s /q multi-sync-4.0
+7z x multi-sync-4.0.zip
+cd multi-sync-4.0
+install %USERPROFILE%\bin
+```
 
 multi-sync is controlled by a config file, here's a sample:
 
