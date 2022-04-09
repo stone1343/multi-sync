@@ -5,6 +5,9 @@ end
 
 local exitRC = 0
 
+--print('path '..package.path)
+--print('cpath '..package.cpath)
+
 if not prequire("lfs") then
   print("luafilesystem not found")
   exitRC = 1
