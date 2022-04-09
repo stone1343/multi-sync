@@ -31,22 +31,22 @@ sudo luarocks install penlight
 # Install multi-sync v4.0.1
 cd ~/Downloads
 [ -d multi-sync ] && rm -rf multi-sync
-git clone --depth 1 --branch v4.0.1 https://github.com/stone1343/multi-sync.git
-if [ -d "multi-sync" ]; then
-  cd multi-sync
+git clone --depth 1 --branch v4.0.1 https://github.com/stone1343/multi-sync.git multi-sync-4.0.1
+if [ -d "multi-sync-4.0.1" ]; then
+  cd multi-sync-4.0.1
   sudo ./install
 fi
 ```
 
-Install multi-sync v4.0 to %USERPROFILE%\bin in Windows
+Install multi-sync v4.0.1 to %USERPROFILE%\bin in Windows
 
 ```
 cd %USERPROFILE%\Downloads
-if exist multi-sync-4.0.zip del multi-sync-4.0.zip
-curl -L -o multi-sync-4.0.zip http://github.com/stone1343/multi-sync/archive/refs/tags/v4.0.zip
-if exist multi-sync-4.0\. rmdir /s /q multi-sync-4.0
-7z x multi-sync-4.0.zip
-cd multi-sync-4.0
+if exist multi-sync-4.0.1.zip del multi-sync-4.0.1.zip
+curl -L -o multi-sync-4.0.1.zip http://github.com/stone1343/multi-sync/archive/refs/tags/v4.0.1.zip
+if exist multi-sync-4.0.1\. rmdir /s /q multi-sync-4.0.1
+7z x multi-sync-4.0.1.zip
+cd multi-sync-4.0.1
 install %USERPROFILE%\bin
 ```
 
