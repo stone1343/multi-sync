@@ -38,6 +38,12 @@ if [ -d "multi-sync-4.0.1" ]; then
 fi
 ```
 
+Assuming your backup drive is mounted at /media/$USER/backup, you can create a directory and you should be ready to go:
+
+```bash
+sudo mkdir -p /media/$USER/backup/$HOSTNAME/home
+```
+
 Install multi-sync v4.0.1 to %USERPROFILE%\bin in Windows
 
 ```
