@@ -1,22 +1,21 @@
 #!/usr/bin/env bash
 
 lua=$(which lua5.4)
-if [ ! -z $lua ]; then
+if [ -n "$lua" ]; then
   luav=5.4
 else
   lua=$(which lua5.3)
-  if [ ! -z $lua ]; then
+  if [ -n "$lua" ]; then
     luav=5.3
   else
     lua=$(which lua5.2)
-    if [ ! -z $lua ]; then
+    if [ -n "$lua" ]; then
       luav=5.2
     fi
   fi
 fi
-export LUA_PATH="$HOME/.luarocks/share/lua/$luav/?.lua;;"
-export LUA_CPATH="$HOME/.luarocks/lib/lua/$luav/?.so;;"
-# From https://stackoverflow.com/questions/59895/how-can-i-get-the-source-directory-of-a-bash-script-from-within-the-script-itsel 2021-06-11
+#export LUA_PATH="/usr/local/lib/lua/$luav/?.lua;;"
+#export LUA_CPATH="/usr/local/lib/lua/$luav/?.so;;"
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 INSTALLDIR="${SCRIPTDIR}/../share/multi-sync"
 ms=$INSTALLDIR/multi-sync.lua
@@ -27,7 +26,7 @@ export CONFIGDIR=$HOME/.config
 [ ! -f $CONFIGDIR/multi-sync.sqlite3 ] && cp $INSTALLDIR/multi-sync.sqlite3 $CONFIGDIR
 [ ! -f $CONFIGDIR/multi-sync-config.lua ] && cp $INSTALLDIR/multi-sync-config.lua $CONFIGDIR
 # If Lua and multi-sync.lua are both found, execute
-if [ ! -z $lua ] && [ -f $ms ]; then
+if [ ! -z "$lua" ] && [ -f $ms ]; then
   $lua $ms "$@"
   exit $?
 else
