@@ -28,10 +28,10 @@ sudo luarocks install luasql-sqlite3-2.6.0-1.rockspec
 sudo luarocks install luafilesystem
 sudo luarocks install argparse
 sudo luarocks install penlight
-# Install multi-sync v4.0
+# Install multi-sync v4.0.1
 cd ~/Downloads
 [ -d multi-sync ] && rm -rf multi-sync
-git clone --depth 1 --branch v4.0 https://github.com/stone1343/multi-sync.git
+git clone --depth 1 --branch v4.0.1 https://github.com/stone1343/multi-sync.git
 if [ -d "multi-sync" ]; then
   cd multi-sync
   sudo ./install
