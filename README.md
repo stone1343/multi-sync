@@ -30,7 +30,7 @@ sudo luarocks install argparse
 sudo luarocks install penlight
 # Install multi-sync v4.0.1
 cd ~/Downloads
-[ -d multi-sync ] && rm -rf multi-sync
+[ -d multi-sync-4.0.1 ] && rm -rf multi-sync-4.0.1
 git clone --depth 1 --branch v4.0.1 https://github.com/stone1343/multi-sync.git multi-sync-4.0.1
 if [ -d "multi-sync-4.0.1" ]; then
   cd multi-sync-4.0.1
