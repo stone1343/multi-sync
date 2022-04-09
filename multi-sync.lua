@@ -38,8 +38,9 @@
 -- v3.2.1 2021-06-11 JMS Allow install to ~/.local or /usr/local (or any other location but YMMV)
 -- v3.3   2021-11-01 JMS Added functions noRulesSpecified() and thisRuleSpecified for use in config file
 -- v4.0   2022-03-20 JMS Re-design configFile, now only supporting rsync and robocopy
+-- v4.0.1 2022-04-09 JMS Install improvements
 
-local multisync_version = '4.0'
+local multisync_version = '4.0.1'
 -- To update copyright date (e.g. 2018-2022), see epilog below
 
 -- These will fail if not found but the alternative isn't much better
