@@ -28,7 +28,7 @@ export CONFIGDIR=$HOME/.config
 # If Lua and multi-sync.lua are both found, execute
 if [ ! -z "$lua" ] && [ -f $ms ]; then
   $lua $ms "$@"
-  exit $?
+  #exit $?
 else
   echo "Lua and/or multi-sync.lua not found"
   exit 1
