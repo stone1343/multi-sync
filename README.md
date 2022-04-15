@@ -2,7 +2,7 @@
 
 Rule-driven synchronization for Windows and Linux
  
-To install in Ubuntu-based Linux, using current versions as of 2022-04-01:
+To install pre-reqs in Ubuntu-based Linux, using current versions as of 2022-04-01:
 
 ```bash
 # Install Lua, SQLite, other pre-reqs
@@ -28,12 +28,28 @@ sudo luarocks install luasql-sqlite3-2.6.0-1.rockspec
 sudo luarocks install luafilesystem
 sudo luarocks install argparse
 sudo luarocks install penlight
-# Install multi-sync v4.0.1
+```
+
+Install multi-sync v4.0.2
+
+```bash
 cd ~/Downloads
-[ -d multi-sync-4.0.1 ] && rm -rf multi-sync-4.0.1
-git clone --depth 1 --branch v4.0.1 https://github.com/stone1343/multi-sync.git multi-sync-4.0.1
-if [ -d "multi-sync-4.0.1" ]; then
-  cd multi-sync-4.0.1
+[ -d multi-sync-4.0.2 ] && rm -rf multi-sync-4.0.2
+git clone --depth 1 --branch v4.0.2 https://github.com/stone1343/multi-sync.git multi-sync-4.0.2
+if [ -d "multi-sync-4.0.2" ]; then
+  cd multi-sync-4.0.2
+  sudo ./install
+fi
+```
+
+Or install the latest and greatest
+
+```bash
+cd ~/Downloads
+[ -d multi-sync ] && rm -rf multi-sync
+git clone https://github.com/stone1343/multi-sync.git multi-sync
+if [ -d "multi-sync" ]; then
+  cd multi-sync
   sudo ./install
 fi
 ```
@@ -44,15 +60,27 @@ Assuming your backup drive is mounted at /media/$USER/backup, you can create a d
 sudo mkdir -p /media/$USER/backup/$HOSTNAME/home
 ```
 
-Install multi-sync v4.0.1 to %USERPROFILE%\bin in Windows
+Install multi-sync v4.0.2 to %USERPROFILE%\bin in Windows
 
 ```
 cd %USERPROFILE%\Downloads
-if exist multi-sync-4.0.1.zip del multi-sync-4.0.1.zip
-curl -L -o multi-sync-4.0.1.zip http://github.com/stone1343/multi-sync/archive/refs/tags/v4.0.1.zip
-if exist multi-sync-4.0.1\. rmdir /s /q multi-sync-4.0.1
-7z x multi-sync-4.0.1.zip
-cd multi-sync-4.0.1
+if exist multi-sync-4.0.2.zip del multi-sync-4.0.2.zip
+curl -L -o multi-sync-4.0.2.zip http://github.com/stone1343/multi-sync/archive/refs/tags/v4.0.2.zip
+if exist multi-sync-4.0.2\. rmdir /s /q multi-sync-4.0.2
+7z x multi-sync-4.0.2.zip
+cd multi-sync-4.0.2
+install %USERPROFILE%\bin
+```
+
+Or install the latest and greatest
+
+```
+cd %USERPROFILE%\Downloads
+if exist multi-sync.zip del multi-sync.zip
+curl -L -o multi-sync.zip https://github.com/stone1343/multi-sync/archive/refs/heads/main.zip
+if exist multi-sync-main\. rmdir /s /q multi-sync-main
+7z x multi-sync.zip
+cd multi-sync-main
 install %USERPROFILE%\bin
 ```
 

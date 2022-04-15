@@ -41,7 +41,7 @@
 -- v4.0.1 2022-04-09 JMS Install improvements
 -- v4.0.2 2022-04-16 JMS Less worrying about return codes
 
-local multisync_version = '4.0.2 (pre)'
+local multisync_version = '4.0.2'
 -- To update copyright date (e.g. 2018-2022), see epilog below
 
 -- These will fail if not found but the alternative isn't much better
@@ -357,7 +357,6 @@ if pre then
 end
 
 -- Process rules
---local exitRC
 for i, rule in pairs(rules) do
   -- Evaluate the rule
   name = rule.name
@@ -425,11 +424,6 @@ for i, rule in pairs(rules) do
             if string.len(stdout) ~= 0 then
               print('\n'..stdout)
             end
-            --if rc ~= 0 then
-              --print('rc = '..rc)
-              --print(err)
-              --exitRC = 1
-            --end
             if not args.list then executeSQL(db, string.format([[insert or replace into sync_history (src, dest, utc, rc) values('%s', '%s', datetime('now'), '%d')]], src, dest, rc)) end
           end
           lastSync(db, src, dest)
@@ -478,5 +472,4 @@ end
 -- Close everything
 db:close()
 env:close()
---os.exit(exitRC)
 os.exit()
