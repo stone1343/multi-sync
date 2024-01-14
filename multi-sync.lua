@@ -40,9 +40,10 @@
 -- v4.0   2022-03-20 JMS Re-design configFile, now only supporting rsync and robocopy
 -- v4.0.1 2022-04-09 JMS Install improvements
 -- v4.0.2 2022-04-16 JMS Less worrying about return codes
+-- v4.1   2024-01-14 JMS Don't distribute Windows binaries
 
-local multisync_version = '4.0.2'
--- To update copyright date (e.g. 2018-2022), see epilog below
+local multisync_version = '4.1'
+-- To update copyright date, see epilog below
 
 -- These will fail if not found but the alternative isn't much better
 lfs = require 'lfs'
@@ -193,7 +194,7 @@ local parser = argparse()
   :name 'multi-sync'
   :description 'Rules-based script for using rsync, robocopy or other tool to automate backups'
   -- https://opensource.org/licenses/MIT
-  :epilog [[Copyright (c) 2018-2022 Jeff Stone
+  :epilog [[Copyright (c) 2018-2024 Jeff Stone
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
