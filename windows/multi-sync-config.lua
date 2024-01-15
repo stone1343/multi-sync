@@ -1,6 +1,6 @@
 --[=[
 
-  multi-sync-config.lua v4.0
+  multi-sync-config.lua v4.1
 
   Each rule must define:
     src - a directory or a file
