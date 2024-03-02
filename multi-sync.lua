@@ -209,7 +209,7 @@ parser:mutex(
     :action(
       function()
         print('multi-sync '..multisync_version)
-        print(_VERSION)
+        file = io.popen('lua -v'); print(file:read())
         print(lfs._VERSION)
         print(luasql._VERSION)
         local db = env:connect(':memory:')

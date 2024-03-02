@@ -120,7 +120,7 @@ Or install the latest and greatest
 
 ```
 pushd %USERPROFILE%\Downloads
-if exist multi-sync.zip del multi-sync.zip
+if exist multi-sync-main.zip del multi-sync-main.zip
 curl -L -o multi-sync-main.zip https://github.com/stone1343/multi-sync/archive/refs/heads/main.zip
 if exist multi-sync-main\. rmdir /s /q multi-sync-main
 "C:\Program Files\7-Zip\7z" x multi-sync-main.zip
