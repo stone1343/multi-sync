@@ -14,8 +14,6 @@ else
     fi
   fi
 fi
-#export LUA_PATH="/usr/local/lib/lua/$luav/?.lua;;"
-#export LUA_CPATH="/usr/local/lib/lua/$luav/?.so;;"
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 INSTALLDIR="${SCRIPTDIR}/../share/multi-sync"
 ms=$INSTALLDIR/multi-sync.lua

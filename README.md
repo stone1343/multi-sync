@@ -1,7 +1,9 @@
 # *multi-sync*
 
 Rule-driven synchronization for Windows and Linux
- 
+
+## Linux
+
 To install pre-reqs in Ubuntu-based Linux, using current versions as of 2022-04-01:
 
 ```bash
@@ -30,14 +32,14 @@ sudo luarocks install argparse
 sudo luarocks install penlight
 ```
 
-Install multi-sync v4.0.2
+Install multi-sync v4.1
 
 ```bash
 cd ~/Downloads
-[ -d multi-sync-4.0.2 ] && rm -rf multi-sync-4.0.2
-git clone --depth 1 --branch v4.0.2 https://github.com/stone1343/multi-sync.git multi-sync-4.0.2
-if [ -d "multi-sync-4.0.2" ]; then
-  cd multi-sync-4.0.2
+[ -d multi-sync-4.1 ] && rm -rf multi-sync-4.1
+git clone --depth 1 --branch v4.1 https://github.com/stone1343/multi-sync.git multi-sync-4.1
+if [ -d "multi-sync-4.1" ]; then
+  cd multi-sync-4.1
   sudo ./install
 fi
 ```
@@ -60,36 +62,12 @@ Assuming your backup drive is mounted at /media/$USER/backup, you can create a d
 sudo mkdir -p /media/$USER/backup/$HOSTNAME/home
 ```
 
-Install multi-sync v4.0.2 to %USERPROFILE%\bin in Windows
-
-```
-cd %USERPROFILE%\Downloads
-if exist multi-sync-4.0.2.zip del multi-sync-4.0.2.zip
-curl -L -o multi-sync-4.0.2.zip http://github.com/stone1343/multi-sync/archive/refs/tags/v4.0.2.zip
-if exist multi-sync-4.0.2\. rmdir /s /q multi-sync-4.0.2
-7z x multi-sync-4.0.2.zip
-cd multi-sync-4.0.2
-install %USERPROFILE%\bin
-```
-
-Or install the latest and greatest
-
-```
-cd %USERPROFILE%\Downloads
-if exist multi-sync.zip del multi-sync.zip
-curl -L -o multi-sync.zip https://github.com/stone1343/multi-sync/archive/refs/heads/main.zip
-if exist multi-sync-main\. rmdir /s /q multi-sync-main
-7z x multi-sync.zip
-cd multi-sync-main
-install %USERPROFILE%\bin
-```
-
-multi-sync is controlled by a config file, here's a sample:
+### Default Linux config file
 
 ```lua
 --[=[
 
-  multi-sync-config.lua v4.0
+  multi-sync-config.lua v4.1
 
   Each rule must define:
     src - a directory or a file
@@ -109,43 +87,10 @@ multi-sync is controlled by a config file, here's a sample:
 ]=]
 
 rules = {
-  -- To backup
   {
     name = 'home',
     src  = '/home/',
     dest = '/media/{username}/backup/{computername}/home/'
-  },
-  -- To backup2
-  {
-    name = 'home',
-    expression = false, -- disabled
-    src  = '/home/',
-    dest = '/media/{username}/backup2/{computername}/home/'
-  },
-  {
-    name = 'images',
-    expression = '(name and tablex.find(args.cmdLineNames, name))', -- 'this rule specified', since it's so big
-    src  = '/var/lib/libvirt/images/',
-    dest = '/media/{username}/backup2/images/'
-  },
-  -- Backup fat32drv to backup
-  {
-    src  = '/media/{username}/fat32drv/',
-    dest = '/media/{username}/backup/fat32drv/',
-    notLinuxFilesystem = true
-  },
-  -- Copy some directories to ntfsdrv
-  {
-    name = 'music',
-    src  = '/files/music/',
-    dest = '/media/{username}/ntfsdrv/files/music/',
-    notLinuxFilesystem = true
-  },
-  {
-    name = 'pictures',
-    src  = '/files/pictures/',
-    dest = '/media/{username}/ntfsdrv/files/pictures/',
-    notLinuxFilesystem = true
   }
 }
 
@@ -153,8 +98,85 @@ post = [[
   if isDir('/media/{username}/backup/{computername}/home/{username}/.config/') then
     copyFile(dbFile, '/media/{username}/backup/{computername}/home/{username}/.config/')
   end
-  if isDir('/media/{username}/backup2/{computername}/home/{username}/.config/') then
-    copyFile(dbFile, '/media/{username}/backup2/{computername}/home/{username}/.config/')
-  end
 ]]
+```
+
+## Windows
+
+Install multi-sync v4.1 to %USERPROFILE%\bin in Windows
+
+```
+pushd %USERPROFILE%\Downloads
+if exist multi-sync-4.1.zip del multi-sync-4.1.zip
+curl -L -o multi-sync-4.1.zip http://github.com/stone1343/multi-sync/archive/refs/tags/v4.1.zip
+if exist multi-sync-4.1\. rmdir /s /q multi-sync-4.1
+"C:\Program Files\7-Zip\7z" x multi-sync-4.1.zip
+cd multi-sync-4.1
+call install %USERPROFILE%\bin
+popd
+```
+
+Or install the latest and greatest
+
+```
+pushd %USERPROFILE%\Downloads
+if exist multi-sync.zip del multi-sync.zip
+curl -L -o multi-sync-main.zip https://github.com/stone1343/multi-sync/archive/refs/heads/main.zip
+if exist multi-sync-main\. rmdir /s /q multi-sync-main
+"C:\Program Files\7-Zip\7z" x multi-sync-main.zip
+cd multi-sync-main
+call install %USERPROFILE%\bin
+popd
+```
+
+### Default Windows config file
+
+```lua
+--[=[
+
+  multi-sync-config.lua v4.1
+
+  Each rule must define:
+    src - a directory or a file
+    dest - a directory
+
+  And optionally:
+    name - rule name, does not need to be unique
+    expression - evaluated as a boolean, so anything other than false and nil is true. If false, the rule will be skipped
+    options - additional robocopy options
+
+  In expression, src and dest, {computername} and {username} will be replaced with the actual computername and username
+
+  Windows filespecs use [[]] because otherwise \ would be interpreted as an escape character
+
+]=]
+
+rules = {
+  {
+    name = 'documents',
+    src  = [[C:\Users\{username}\Documents]],
+    dest = [[E:\backup\{computername}\{username}\Documents]]
+  },
+  {
+    name = 'music',
+    src  = [[C:\Users\{username}\Music]],
+    dest = [[E:\backup\{computername}\{username}\Music]]
+  },
+  {
+    name = 'pictures',
+    src  = [[C:\Users\{username}\Pictures]],
+    dest = [[E:\backup\{computername}\{username}\Pictures]]
+  },
+  {
+    name = 'videos',
+    src  = [[C:\Users\{username}\Videos]],
+    dest = [[E:\backup\{computername}\{username}\Videos]]
+  },
+}
+
+post = [=[
+  if isDir([[E:\backup\{computername}\{username}\AppData\Local]]) then
+    copyFile(dbFile, [[E:\backup\{computername}\{username}\AppData\Local]])
+  end
+]=]
 ```

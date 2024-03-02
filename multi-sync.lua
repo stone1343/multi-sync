@@ -40,9 +40,9 @@
 -- v4.0   2022-03-20 JMS Re-design configFile, now only supporting rsync and robocopy
 -- v4.0.1 2022-04-09 JMS Install improvements
 -- v4.0.2 2022-04-16 JMS Less worrying about return codes
--- v4.1   2024-01-14 JMS Don't distribute Windows binaries
+-- v4.1   2024-03-03 JMS Don't distribute Windows binaries
 
-local multisync_version = '4.1'
+local multisync_version = '4.1 2024-03-03'
 -- To update copyright date, see epilog below
 
 -- These will fail if not found but the alternative isn't much better

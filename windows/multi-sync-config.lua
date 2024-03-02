@@ -19,12 +19,6 @@
 
 rules = {
   {
-    -- This is a file
-    name = 'multi-sync-config',
-    src  = [[C:\Users\{username}\AppData\Local\multi-sync-config.lua]],
-    dest = [[E:\backup\{computername}\{username}\AppData\Local]]
-  },
-  {
     name = 'documents',
     src  = [[C:\Users\{username}\Documents]],
     dest = [[E:\backup\{computername}\{username}\Documents]]
