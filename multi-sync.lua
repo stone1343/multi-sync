@@ -182,8 +182,6 @@ end
 dbFilename = 'multi-sync.sqlite3'
 configFilename = 'multi-sync-config.lua'
 computerName, userName = os.getenv('COMPUTERNAME'), os.getenv('USERNAME')
-print('COMPUTERNAME '..computerName)
-print('USERNAME     '..userName)
 configDir = os.getenv('CONFIGDIR')
 if (not computerName) or (not userName) or (not configDir) then
   print('Set environment variables COMPUTERNAME, USERNAME and CONFIGDIR prior to calling Lua')
@@ -195,8 +193,7 @@ local db
 env = luasql.sqlite3()
 local parser = argparse()
   :name 'multi-sync'
-  :description 'Rules-based script for using rsync, robocopy or other tool to automate backups'
-  -- https://opensource.org/licenses/MIT
+  :description 'Rules-based script for using rsync or robocopy to automate backups'
   :epilog [[Copyright (c) 2018-2024 Jeff Stone
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
