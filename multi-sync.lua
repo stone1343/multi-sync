@@ -41,8 +41,9 @@
 -- v4.0.1 2022-04-09 JMS Install improvements
 -- v4.0.2 2022-04-16 JMS Less worrying about return codes
 -- v4.1   2024-03-03 JMS Don't distribute Windows binaries
+-- v4.2   2024-10-20 JMS expression must be specified. Due to how Lua evaluates 'false', it's the same as not being specified
 
-local multisync_version = '4.1 2024-03-03'
+local multisync_version = '4.2 2024-10-20'
 -- To update copyright date, see epilog below
 
 -- These will fail if not found but the alternative isn't much better
@@ -181,6 +182,8 @@ end
 dbFilename = 'multi-sync.sqlite3'
 configFilename = 'multi-sync-config.lua'
 computerName, userName = os.getenv('COMPUTERNAME'), os.getenv('USERNAME')
+print('COMPUTERNAME '..computerName)
+print('USERNAME     '..userName)
 configDir = os.getenv('CONFIGDIR')
 if (not computerName) or (not userName) or (not configDir) then
   print('Set environment variables COMPUTERNAME, USERNAME and CONFIGDIR prior to calling Lua')
@@ -364,7 +367,6 @@ for i, rule in pairs(rules) do
   if name == '' then name = nil end
   expression = rule.expression
   if expression == '' then expression = nil end
-  if expression then expression = replaceEnvironmentVariables(expression) end
   src = rule.src
   if src == '' then src = nil end
   if src then
@@ -375,11 +377,24 @@ for i, rule in pairs(rules) do
   if dest then
     dest = replaceEnvironmentVariables(dest)
   end
-  if src and dest and (not isSameFilespec(src, dest)) then
-    if (path.isdir(src) or path.isfile(src)) and path.isdir(dest) then
-      -- No rules specified                     or this rule specified
-      if ((tablex.size(args.cmdLineNames) == 0) or (name and tablex.find(args.cmdLineNames, name))) then
-        if not expression or load('return('..string.gsub(expression, '\\', '\\\\')..')')() then
+  -- No rules specified                     or this rule specified
+  if ((tablex.size(args.cmdLineNames) == 0) or (name and tablex.find(args.cmdLineNames, name))) then
+   -- if (expression == nil) then
+    --   print('expression is nil/false')
+    -- else
+    --   print('type(expression) '..type(expression))
+    --   print('expression 1 '..tostring(expression))
+    -- end
+    if expression and type(expression) == 'string' then
+      expression = replaceEnvironmentVariables(expression)
+      -- print('expression 2 '..expression)
+      -- Convert it to a boolean
+      expression = load('return('..expression..')')()
+    end
+    -- print('expression final '..tostring(expression))
+    if expression then
+      if src and dest and (not isSameFilespec(src, dest)) then
+        if (path.isdir(src) or path.isfile(src)) and path.isdir(dest) then
           if path.is_windows then
             options = rule.options and rule.options or '/njh /ndl /njs /r:2 /w:2 /xjd'
             if args.list then
@@ -394,11 +409,8 @@ for i, rule in pairs(rules) do
             end
           else
             options = rule.options and rule.options or ''
-            -- This logic defaults to 'false'
-            --linuxFilesystem = rule.linuxFilesystem and rule.linuxFilesystem or false
-            -- Due to how nil also evaluates to false in Lua, it's impossible to default linuxFilesystem to true, so instead have the config setting be 'notLinuxFilesystem' and do something that looks really weird:
+            -- Due to how nil evaluates to false in Lua, it's impossible to default linuxFilesystem to true, so instead have the config setting be 'notLinuxFilesystem' and do something that looks really weird:
             linuxFilesystem = (not rule.notLinuxFilesystem)
-            --print('\nName '..name..' '..tostring(linuxFilesystem))
             cmd = 'rsync'
             if options ~= '' then
               options = ' '..options
@@ -430,33 +442,33 @@ for i, rule in pairs(rules) do
           lastSync(db, src, dest)
         else
           if args.verbose then
-            crlf()
-            printRule(name, expression, src, dest)
-            print('\nRule skipped because of expression')
+            crlf();
+            printRule(name, rule.expression, src, dest)
+            print('\nRule skipped because src and/or dest does not exist')
           end
         end
       else
+        crlf();
         if args.verbose then
-          crlf();
-          printRule(name, expression, src, dest)
-          print('\nRule skipped because of name')
+          printRule(name, rule.expression, src, dest)
+        else
+          printRule(nil, nil, src, dest)
         end
+        print('\nRule skipped because of config issue with src and/or dest')
       end
     else
       if args.verbose then
-        crlf();
-        printRule(name, expression, src, dest)
-        print('\nRule skipped because src and/or dest does not exist')
+        crlf()
+        printRule(name, rule.expression, src, dest)
+        print('\nRule skipped because of expression')
       end
     end
   else
-    crlf();
     if args.verbose then
-      printRule(name, expression, src, dest)
-    else
-      printRule(nil, nil, src, dest)
+      crlf();
+      printRule(name, rule.expression, src, dest)
+      print('\nRule skipped because of name')
     end
-    print('\nRule skipped because of config issue with src and/or dest')
   end
 end --for
 
