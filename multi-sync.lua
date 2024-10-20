@@ -418,7 +418,7 @@ for i, rule in pairs(rules) do
             cmd = cmd..options..' --delete "'..src..'" "'..dest..'"'
           end
           crlf()
-          printRule(name, expression, src, dest, cmd)
+          printRule(name, tostring(rule.expression), src, dest, cmd)
           if (not args.dryRun) then
             local handler = io.popen(cmd)
             local stdout = handler:read('*a')
