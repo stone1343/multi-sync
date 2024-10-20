@@ -376,19 +376,11 @@ for i, rule in pairs(rules) do
   end
   -- No rules specified                     or this rule specified
   if ((tablex.size(args.cmdLineNames) == 0) or (name and tablex.find(args.cmdLineNames, name))) then
-   -- if (expression == nil) then
-    --   print('expression is nil/false')
-    -- else
-    --   print('type(expression) '..type(expression))
-    --   print('expression 1 '..tostring(expression))
-    -- end
     if expression and type(expression) == 'string' then
       expression = replaceEnvironmentVariables(expression)
-      -- print('expression 2 '..expression)
       -- Convert it to a boolean
       expression = load('return('..expression..')')()
     end
-    -- print('expression final '..tostring(expression))
     if expression then
       if src and dest and (not isSameFilespec(src, dest)) then
         if (path.isdir(src) or path.isfile(src)) and path.isdir(dest) then
@@ -440,14 +432,14 @@ for i, rule in pairs(rules) do
         else
           if args.verbose then
             crlf();
-            printRule(name, rule.expression, src, dest)
+            printRule(name, tostring(rule.expression), src, dest)
             print('\nRule skipped because src and/or dest does not exist')
           end
         end
       else
         crlf();
         if args.verbose then
-          printRule(name, rule.expression, src, dest)
+          printRule(name, tostring(rule.expression), src, dest)
         else
           printRule(nil, nil, src, dest)
         end
@@ -456,14 +448,14 @@ for i, rule in pairs(rules) do
     else
       if args.verbose then
         crlf()
-        printRule(name, rule.expression, src, dest)
+        printRule(name, tostring(rule.expression), src, dest)
         print('\nRule skipped because of expression')
       end
     end
   else
     if args.verbose then
       crlf();
-      printRule(name, rule.expression, src, dest)
+      printRule(name, tostring(rule.expression), src, dest)
       print('\nRule skipped because of name')
     end
   end
