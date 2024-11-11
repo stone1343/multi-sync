@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+if [ $EUID -ne 0 ]; then
+  echo "This script must be run as root" >&2
+  set -e
+  exit 1
+fi
+
+INSTALLDIR="/usr/local"
+if [ ! -d $INSTALLDIR/bin ] || [ ! -d $INSTALLDIR/share ]; then
+  echo -e "\n$INSTALLDIR/bin and/or $INSTALLDIR/share does not exist, cannot install"
+  exit 1
+fi
+# Check pre-reqs
+if [ -z "$(which rsync)" ]; then
+  echo "rsync not found"
+  exit 1
+fi
+lua=$(which lua5.4)
+if [ -n "$lua" ]; then
+  luav=5.4
+else
+  lua=$(which lua5.3)
+  if [ -n "$lua" ]; then
+    luav=5.3
+  fi
+fi
+if [ -z "$lua" ]; then
+  echo "Lua not found"
+  exit 1
+fi
+$lua check-prereqs.lua
+if [ $? -ne 0 ]; then
+  echo "Pre-reqs not installed"
+  exit 1
+fi
+install -m 755 linux/multi-sync $INSTALLDIR/bin
+[ ! -d $INSTALLDIR/share/multi-sync ] && mkdir -p $INSTALLDIR/share/multi-sync
+install -m 644 multi-sync.lua $INSTALLDIR/share/multi-sync
+install -m 644 linux/multi-sync-config.lua $INSTALLDIR/share/multi-sync
+install -m 644 linux/multi-sync.sqlite3 $INSTALLDIR/share/multi-sync
+if [ -f $INSTALLDIR/bin/multi-sync ] && [ -f $INSTALLDIR/share/multi-sync/multi-sync.lua ] && [ -f $INSTALLDIR/share/multi-sync/multi-sync-config.lua ] && [ -f $INSTALLDIR/share/multi-sync/multi-sync.sqlite3 ]; then
+  echo "multi-sync installed"
+fi

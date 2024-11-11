@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+lua=$(which lua5.4)
+if [ -n "$lua" ]; then
+  luav=5.4
+else
+  lua=$(which lua5.3)
+  if [ -n "$lua" ]; then
+    luav=5.3
+  fi
+fi
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd )"
+INSTALLDIR="${SCRIPTDIR}/../share/multi-sync"
+ms=$INSTALLDIR/multi-sync.lua
+export COMPUTERNAME=$(hostname)
+export USERNAME=$USER
+export CONFIGDIR=$HOME/.config
+[ ! -d $CONFIGDIR ] && mkdir $CONFIGDIR
+[ ! -f $CONFIGDIR/multi-sync.sqlite3 ] && cp $INSTALLDIR/multi-sync.sqlite3 $CONFIGDIR
+[ ! -f $CONFIGDIR/multi-sync-config.lua ] && cp $INSTALLDIR/multi-sync-config.lua $CONFIGDIR
+# If Lua and multi-sync.lua are both found, execute
+if [ ! -z "$lua" ] && [ -f $ms ]; then
+  $lua $ms "$@"
+else
+  echo "Lua and/or multi-sync.lua not found"
+  exit 1
+fi
