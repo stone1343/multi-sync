@@ -1,33 +1,31 @@
---[=[
-  multi-sync-config.lua
-]=]
+--[[ multi-sync-config.lua ]]
 
 rules = {
   {
     name = 'documents',
-    src  = [[C:\Users\{username}\Documents]],
-    dest = [[E:\backup\{computername}\{username}\Documents]]
+    src  = 'C:\\Users\\'..userName..'\\Documents',
+    dest = 'E:\\backup\\'..computerName..'\\'..userName..'\\Documents'
   },
   {
     name = 'music',
-    src  = [[C:\Users\{username}\Music]],
-    dest = [[E:\backup\{computername}\{username}\Music]]
+    src  = 'C:\\Users\\'..userName..'\\Music',
+    dest = 'E:\\backup\\'..computerName..'\\'..userName..'\\Music'
   },
   {
     name = 'pictures',
-    src  = [[C:\Users\{username}\Pictures]],
-    dest = [[E:\backup\{computername}\{username}\Pictures]]
+    src  = 'C:\\Users\\'..userName..'\\Pictures',
+    dest = 'E:\\backup\\'..computerName..'\\'..userName..'\\Pictures'
   },
   {
     name = 'videos',
-    expression = [=[false]=] -- Disabled
-    src  = [[C:\Users\{username}\Videos]],
-    dest = [[E:\backup\{computername}\{username}\Videos]]
+    expression = [[false]] -- Disabled
+    src  = 'C:\\Users\\'..userName..'\\Videos',
+    dest = 'E:\\backup\\'..computerName..'\\'..userName..'\\Documents'
   },
 }
 
-post = [=[
-  if isDir([[E:\backup\{computername}\{username}\AppData\Local]]) then
-    copyFile(dbFile, [[E:\backup\{computername}\{username}\AppData\Local]])
+function post()
+  if isDir('E:\\backup\\'..computerName) then
+    copyFile(dbFile, 'E:\\backup\\'..computerName)
   end
-]=]
+end

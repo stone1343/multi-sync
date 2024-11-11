@@ -1,50 +1,7 @@
--- v1.0   2016-10-01 JMS
--- v1.0.1 2016-10-04 JMS Enhanced customizability and usability
--- v1.0.2 2016-10-06 JMS More enhanced customizability and usability
--- v1.1   2016-10-23 JMS {computername} and {username} in -config files, so less customization required
--- v1.1.1 2016-10-25 JMS When outputting 'Latest successful sync', also output if the rule has never been synced
--- v1.1.2 2016-10-27 JMS Bugfix, cmd and options must be global
--- v1.2   2016-10-30 JMS List files modified since last sync
--- v1.2.1 2016-10-31 JMS Move the 'list files modified since last sync' code to where it can also run if dest doesn't exist
--- v1.2.2 2016-12-17 JMS Tolerate null attr from Google Drive
--- v1.2.3 2017-05-13 JMS Added --version flag, including Lua and library versions
---        2017-06-05 JMS Handle syntax error(s) in multi-sync-config.lua more gracefully, fairly significant re-structuring
--- v1.3   2017-09-20 JMS Various enhancements, code merge
--- v2.0   2017-10-15 JMS 'Dry Run' just outputs the final command(s) without executing anything
---                       Name and expression are optional; cmd, options, cmdSyntax and rules are not
---        2017-10-20 JMS Added --list flag, removed options
---        2017-10-25 JMS Added --print-history flag
---        2017-10-26 JMS Added --forget option
---        2017-10-28 JMS v2.0 readiness
---        2017-10-31 JMS v2.0
--- v2.0.1 2017-11-03 JMS path.abspath is not called, src and dest are used as is
--- v2.1   2017-11-07 JMS Use SQLite datetime() function to store the timestamp so it's human-readable in the database
--- v2.1.1 2017-11-29 JMS Correct typo in variable names filePath, fileName; Solved the -c problem
--- v2.1.2 2017-12-02 JMS No code changes, just more standard Linux packaging
--- v2.1.3 2017-12-03 JMS Installer doesn't create ~/.config, Bash does
--- v2.1.4 2017-12-03 JMS Properly handle initial execution, where both -i and -c are assumed
--- v2.2   2018-10-20 JMS Refresh versions, move to github
--- v2.2.1 2018-11-25 JMS Refresh versions again
--- v2.2.2 2018-12-15 JMS Update SQLite to v3.26 ( https://www.zdnet.com/article/sqlite-bug-impacts-thousands-of-apps-including-all-chromium-based-browsers/ )
--- v2.3   2019-01-01 JMS Add pre and post routines, allow an optional database argument to --print-history
---        2019-01-05 JMS Output Lua's _VERSION, which has been patched to include release, e.g. 5.3.5, without hardcoding it here
--- v2.4   2019-02-03 JMS Change packaging, Linux now relies on libraries installed by LuaRocks
--- v2.5   2019-10-05 JMS Calling script responsible for ensuring both multi-sync.sqlite3 and multi-sync-config.lua exist
--- v3.0   2020-08-05 JMS Re-org, breaks compatibility with previous config files, adds textEditor to config file
--- v3.1   2020-12-05 JMS Change command line options and output; debug replaces quiet so the default is quiet
---        2020-12 06 JMS Fix defect with cmdSyntax
--- v3.2   2021-01-03 JMS Linux INSTALLDIR is /usr/local/share/multi-sync, following the FHS better
---                       --verbose replaces --debug command line option, there's no short version of --verbose
--- v3.2.1 2021-06-11 JMS Allow install to ~/.local or /usr/local (or any other location but YMMV)
--- v3.3   2021-11-01 JMS Added functions noRulesSpecified() and thisRuleSpecified for use in config file
--- v4.0   2022-03-20 JMS Re-design configFile, now only supporting rsync and robocopy
--- v4.0.1 2022-04-09 JMS Install improvements
--- v4.0.2 2022-04-16 JMS Less worrying about return codes
--- v4.1   2024-03-03 JMS Don't distribute Windows binaries
--- v4.2   2024-10-20 JMS expression must be specified. Due to how Lua evaluates 'false', it's the same as not being specified
 -- v4.3   2024-10-30 JMS Major re-work, again :-)
+-- v4.4   2024-11-11 JMS Added rsync remote syntax for linux, pre and post are now just Lua functions
 
-local multisync_version = '4.3 2024-10-30'
+local multisync_version = '4.4 2024-11-11'
 local copyright = 'Copyright (c) 2024 Jeff Stone'
 
 -- These will fail if not found but the alternative isn't much better
@@ -65,7 +22,47 @@ function isFile(filespec)
   return (path.attrib(filespec, 'mode') == 'file')
 end
 
--- Another function for use in config file, typically for use in Post routine to copy the database
+-- Added in v4.4 2024-11-11 for rsync remote
+function validateIP(ip)
+  local ip1, ip2, ip3, ip4 = ip:match("^([1-9]?%d?%d)%.([1-9]?%d?%d)%.([1-9]?%d?%d)%.([1-9]?%d?%d)$")
+  if ip1 and ip2 and ip3 and ip4 then
+    ip1, ip2, ip3, ip4 = tonumber(ip1), tonumber(ip2), tonumber(ip3), tonumber(ip4)
+    if ip1 <= 255 and ip2 <= 255 and ip3 <= 255 and ip4 <= 255 then
+      return true
+    end
+  end
+  return false
+end
+
+function validateRemote(remote)
+  if path.is_windows then return false end
+  -- Match host IP address
+  user, host, file = remote:match("^([%a][%a%d_]+)@([%d.]+):([%a%d%p]+)$")
+  if user and host and file then
+    if not validateIP(host) then host = nil end
+  else
+    -- Match hostname
+    user, host, file = remote:match("^([%a][%a%d_]+)@([%a][%a%d_]+):([%a%d%p]+)$")
+    if host and string.len(host) > 20 then host = nil end
+  end
+  if string.len(user) > 20 then user = nil end
+  --if user and host and file then
+  --  print('\nValid')
+  --else
+  --  print('\nInvalid')
+  --end
+  return(user and host and file)
+end
+
+function validateSrc(src)
+  return (isDir(src) or isFile(src) or validateHost(src))
+end
+
+function validateDest(dest)
+  return (isDir(dest) or isFile(dest) or validateHost(dest))
+end
+
+-- Another function for use in config file, typically for use in Post routine to copy configFile and/or dbFile
 function copyFile(src, dest)
   if path.isfile(src) then
     if path.isdir(dest) then
@@ -76,23 +73,6 @@ function copyFile(src, dest)
   else
     print('\ncopyFile requires src to be an existing file')
   end
-end
-
--- Use a function to determine if two filespecs point to the same file
--- In Windows, filespecs are not case-sensitive but they are in Linux
-function isSameFilespec(filespec1, filespec2)
-  if path.is_windows then
-    return(string.upper(filespec1) == string.upper(filespec2))
-  else
-    return(filespec1 == filespec2)
-  end
-end
-
-function replaceEnvironmentVariables(str)
-  if not path.is_windows then
-    str = string.gsub(str, '~', os.getenv('HOME'))
-  end
-  return string.gsub(string.gsub(str, '{computername}', computerName), '{username}', userName)
 end
 
 -- Reference: https://www.gammon.com.au/scripts/doc.php?lua=dofile
@@ -349,14 +329,7 @@ end
 db = env:connect(dbFile)
 
 -- "Pre" routine
-if pre and type(pre) == 'string' then
-  local func, err = load(replaceEnvironmentVariables(pre))
-  if func then
-    pcall(func)
-  else
-    print('\nCompilation error in pre:', err)
-  end
-end
+if pre then pre() end
 
 -- Process rules
 for i, rule in pairs(rules) do
@@ -374,20 +347,16 @@ for i, rule in pairs(rules) do
         expression = true
       else
         -- Convert it to a boolean
-        expression = load('return('..replaceEnvironmentVariables(expression)..')')()
+        expression = load('return('..expression..')')()
       end
     end
     src = rule.src
     if type(src) ~= 'string' or src == '' then
       src = nil
-    else
-      src = replaceEnvironmentVariables(src)
     end
     dest = rule.dest
     if type(dest) ~= 'string' or dest == '' then
       dest = nil
-    else
-      dest = replaceEnvironmentVariables(dest)
     end
     -- Evaluate the rule
     if name and (tablex.size(args.names) ~= 0) and (not tablex.find(args.names, name)) then
@@ -411,11 +380,11 @@ for i, rule in pairs(rules) do
       end
       do break end
     else
-      if (not path.isdir(src)) and (not path.isfile(src)) then
-        if args.verbose then
+      if not validateSrc(src) then
+        --if args.verbose then
           printRule(name, rule.expression, src, dest)
-          print('\nRule skipped because src does not exist')
-        end
+          print('\nRule skipped because src is invalid')
+        --end
         do break end
       end
     end
@@ -426,11 +395,11 @@ for i, rule in pairs(rules) do
       end
       do break end
     else
-      if (not path.isdir(dest)) or isSameFilespec(src, dest) then
-        if args.verbose then
+      if not validateDest(dest) then
+        --if args.verbose then
           printRule(name, rule.expression, src, dest)
-          print('\nRule skipped because dest does not exist or is the same as src')
-        end
+          print('\nRule skipped because dest is invalid')
+        --end
         do break end
       end
     end
@@ -472,14 +441,7 @@ for i, rule in pairs(rules) do
 end --for
 
 -- "Post" routine
-if post and type(post) == 'string' then
-  local func, err = load(replaceEnvironmentVariables(post))
-  if func then
-    pcall(func)
-  else
-    print('\nCompilation error in post:', err)
-  end
-end
+if post then post() end
 
 -- Close everything
 db:close()
