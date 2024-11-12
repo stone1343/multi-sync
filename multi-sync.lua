@@ -1,7 +1,7 @@
 -- v4.3    2024-10-30 JMS Major re-work, again :-)
--- v5.0    2024-11-22 JMS Added rsync remote syntax for linux, pre and post are now just Lua functions
+-- v5.0    2024-11-22 JMS Added rsync remote syntax for Linux, pre and post are now just Lua functions
 
-local multisync_version = '5.0b 2024-11-22'
+local multisync_version = '5.0c 2024-11-22'
 local copyright = 'Copyright (c) 2024 Jeff Stone'
 
 -- These will fail if not found but the alternative isn't much better
@@ -13,16 +13,21 @@ path = require 'pl.path'
 tablex = require 'pl.tablex'
 utils = require 'pl.utils'
 
--- Similar to path.isdir() and path.isfile(), but defined for use in the config file
-function isDir(filespec)
-  return (path.attrib(filespec, 'mode') == 'directory')
+-- Reference: https://www.gammon.com.au/scripts/doc.php?lua=dofile
+function myDofile(fileName)
+  local f, err = loadfile(fileName)
+  if f then
+    return f()
+  else
+    print(err)
+  end
 end
 
-function isFile(filespec)
-  return (path.attrib(filespec, 'mode') == 'file')
+function traceError(err)
+  print("traceError: "..err)
 end
 
--- Added in v4.4 2024-11-11 for rsync remote
+-- Added in v5.0 for rsync remote
 function validateIP(ip)
   local ip1, ip2, ip3, ip4 = ip:match("^([1-9]?%d?%d)%.([1-9]?%d?%d)%.([1-9]?%d?%d)%.([1-9]?%d?%d)$")
   if ip1 and ip2 and ip3 and ip4 then
@@ -59,29 +64,6 @@ end
 
 function validateDest(dest)
   return (isDir(dest) or isFile(dest) or (not path.is_windows and validateRemote(dest)))
-end
-
--- Another function for use in config file, typically for use in Post routine to copy configFile and/or dbFile
-function copyFile(src, dest)
-  if path.isfile(src) then
-    if path.isdir(dest) then
-      file.copy(src, dest)
-    else
-      print('\ncopyFile requires dest to be an existing directory')
-    end
-  else
-    print('\ncopyFile requires src to be an existing file')
-  end
-end
-
--- Reference: https://www.gammon.com.au/scripts/doc.php?lua=dofile
-function myDofile(fileName)
-  local f, err = loadfile(fileName)
-  if f then
-    return f()
-  else
-    print(err)
-  end
 end
 
 -- None of the parameters are required
@@ -154,6 +136,28 @@ function printHistory(db, rowid)
     end
   end
   return n
+end
+
+-- Functions specifically for use in config file
+
+function isDir(filespec)
+  return (path.attrib(filespec, 'mode') == 'directory')
+end
+
+function isFile(filespec)
+  return (path.attrib(filespec, 'mode') == 'file')
+end
+
+function copyFile(src, dest)
+  if path.isfile(src) then
+    if path.isdir(dest) then
+      file.copy(src, dest)
+    else
+      print('\ncopyFile requires dest to be an existing directory')
+    end
+  else
+    print('\ncopyFile requires src to be an existing file')
+  end
 end
 
 --[[
@@ -326,7 +330,12 @@ end
 db = env:connect(dbFile)
 
 -- "Pre" routine
-if pre then pre() end
+if pre then
+  if not xpcall(pre, traceError) then
+    env:close()
+    os.exit(2)
+  end
+end
 
 -- Process rules
 for i, rule in pairs(rules) do
@@ -439,7 +448,12 @@ for i, rule in pairs(rules) do
 end --for
 
 -- "Post" routine
-if post then post() end
+if post then
+  if not xpcall(post, traceError) then
+    env:close()
+    os.exit(2)
+  end
+end
 
 -- Close everything
 db:close()
