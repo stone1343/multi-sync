@@ -35,7 +35,6 @@ function validateIP(ip)
 end
 
 function validateRemote(remote)
-  if path.is_windows then return false end
   -- Match host IP address
   user, host, file = remote:match("^([%a][%a%d_]+)@([%d.]+):([%a%d%p]+)$")
   if user and host and file then
@@ -46,20 +45,20 @@ function validateRemote(remote)
     if host and string.len(host) > 20 then host = nil end
   end
   if string.len(user) > 20 then user = nil end
-  --if user and host and file then
-  --  print('\nValid')
-  --else
-  --  print('\nInvalid')
-  --end
+  -- if user and host and file then
+  --   print('\nValid')
+  -- else
+  --   print('\nInvalid')
+  -- end
   return(user and host and file)
 end
 
 function validateSrc(src)
-  return (isDir(src) or isFile(src) or validateHost(src))
+  return (isDir(src) or isFile(src) or (not path.is_windows and validateRemote(src)))
 end
 
 function validateDest(dest)
-  return (isDir(dest) or isFile(dest) or validateHost(dest))
+  return (isDir(dest) or isFile(dest) or (not path.is_windows and validateRemote(dest)))
 end
 
 -- Another function for use in config file, typically for use in Post routine to copy configFile and/or dbFile
@@ -381,10 +380,10 @@ for i, rule in pairs(rules) do
       do break end
     else
       if not validateSrc(src) then
-        --if args.verbose then
+        if args.verbose then
           printRule(name, rule.expression, src, dest)
           print('\nRule skipped because src is invalid')
-        --end
+        end
         do break end
       end
     end
@@ -396,10 +395,10 @@ for i, rule in pairs(rules) do
       do break end
     else
       if not validateDest(dest) then
-        --if args.verbose then
+        if args.verbose then
           printRule(name, rule.expression, src, dest)
           print('\nRule skipped because dest is invalid')
-        --end
+        end
         do break end
       end
     end
