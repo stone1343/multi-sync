@@ -36,7 +36,7 @@ end
 
 function validateRemote(remote)
   -- Match host IP address
-  user, host, file = remote:match("^([%a][%a%d_]+)@([%d.]+):([%a%d%p]+)$")
+  local user, host, file = remote:match("^([%a][%a%d_]+)@([%d.]+):([%a%d%p]+)$")
   if user and host and file then
     if not validateIP(host) then host = nil end
   else
