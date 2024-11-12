@@ -1,7 +1,7 @@
--- v4.3.1  2024-10-30 JMS Major re-work, again :-)
+-- v4.3    2024-10-30 JMS Major re-work, again :-)
 -- v5.0    2024-11-22 JMS Added rsync remote syntax for linux, pre and post are now just Lua functions
 
-local multisync_version = '5.0a 2024-11-22'
+local multisync_version = '5.0b 2024-11-22'
 local copyright = 'Copyright (c) 2024 Jeff Stone'
 
 -- These will fail if not found but the alternative isn't much better
@@ -36,21 +36,21 @@ end
 
 function validateRemote(remote)
   -- Match host IP address
-  local username, hostname, filename = remote:match("^([%a][%a%d_]+)@([%d.]+):([%a%d%p]+)$")
-  if username and hostname and filename then
-    if not validateIP(hostname) then hostname = nil end
+  local user, host, file = remote:match("^([%a][%a%d_]+)@([%d.]+):([%a%d%p]+)$")
+  if user and host and file then
+    if not validateIP(host) then host = nil end
   else
     -- Match hostname
-    username, hostname, filename = remote:match("^([%a][%a%d_]+)@([%a][%a%d_]+):([%a%d%p]+)$")
-    if hostname and string.len(hostname) > 20 then hostname = nil end
+    local user, host, file = remote:match("^([%a][%a%d_]+)@([%a][%a%d_]+):([%a%d%p]+)$")
+    if host and string.len(host) > 20 then host = nil end
   end
-  if string.len(username) > 20 then username = nil end
-  -- if username and hostname and filename then
+  if string.len(user) > 20 then user = nil end
+  -- if user and host and file then
   --   print('\nValid')
   -- else
   --   print('\nInvalid')
   -- end
-  return(username and hostname and filename)
+  return(user and host and file)
 end
 
 function validateSrc(src)
@@ -160,14 +160,14 @@ end
   Main begins here
 --]]
 
-dbFilename = 'multi-sync.sqlite3'
 computerName, userName, configDir = os.getenv('COMPUTERNAME'), os.getenv('USERNAME'), os.getenv('CONFIGDIR')
 if (not computerName) or (not userName) or (not configDir) then
   print('Set environment variables COMPUTERNAME, USERNAME and CONFIGDIR prior to calling Lua')
   os.exit(2)
 end
-dbFile = path.join(configDir, dbFilename)
 configFile = path.join(configDir, 'multi-sync-config.lua')
+dbFilename = 'multi-sync.sqlite3'
+dbFile = path.join(configDir, dbFilename)
 local db
 env = luasql.sqlite3()
 local parser = argparse('multi-sync', 'Rules-based script for using rsync or robocopy to automate backups', copyright)
@@ -337,7 +337,7 @@ for i, rule in pairs(rules) do
     if type(name) ~= 'string' or name == '' then name = nil end
     expression = rule.expression
     -- In Lua, nil and false are equivalent, anything else is considered true
-    if (expression == nil) then
+    if not expression then
       expression = true
     else
       if type(expression) ~= 'string' or expression == '' then
@@ -345,6 +345,7 @@ for i, rule in pairs(rules) do
       else
         -- Convert it to a boolean
         expression = load('return('..expression..')')()
+        --print('expression '..tostring(expression))
       end
     end
     src = rule.src
@@ -363,14 +364,14 @@ for i, rule in pairs(rules) do
       end
       do break end
     end
-    if expression == false then
+    if not expression then
       if args.verbose then
         printRule(name, rule.expression, src, dest)
         print('\nRule skipped because of expression')
       end
       do break end
     end
-    if src == nil then
+    if not src then
       if args.verbose then
         printRule(name, rule.expression, src, dest)
         print('\nRule skipped because src is nil')
@@ -385,7 +386,7 @@ for i, rule in pairs(rules) do
         do break end
       end
     end
-    if dest == nil then
+    if not dest then
       if args.verbose then
         printRule(name, rule.expression, src, dest)
         print('\nRule skipped because dest is nil')

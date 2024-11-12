@@ -126,7 +126,7 @@ rules = {
 }
 
 function post()
-  if isDir('E:\backup\\'..computerName..'\\'..userName..'\\AppData\\Local') then
+  if isDir('E:\\backup\\'..computerName..'\\'..userName..'\\AppData\\Local') then
     copyFile(dbFile, 'E:\\backup\\'..computerName..'\\'..userName..'\\AppData\\Local')
   end
 end
