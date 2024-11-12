@@ -1,7 +1,7 @@
--- v4.3   2024-10-30 JMS Major re-work, again :-)
--- v4.4   2024-11-11 JMS Added rsync remote syntax for linux, pre and post are now just Lua functions
+-- v4.3.1  2024-10-30 JMS Major re-work, again :-)
+-- v5.0    2024-11-22 JMS Added rsync remote syntax for linux, pre and post are now just Lua functions
 
-local multisync_version = '4.4 2024-11-11'
+local multisync_version = '5.0a 2024-11-22'
 local copyright = 'Copyright (c) 2024 Jeff Stone'
 
 -- These will fail if not found but the alternative isn't much better
@@ -36,21 +36,21 @@ end
 
 function validateRemote(remote)
   -- Match host IP address
-  local user, host, file = remote:match("^([%a][%a%d_]+)@([%d.]+):([%a%d%p]+)$")
-  if user and host and file then
-    if not validateIP(host) then host = nil end
+  local username, hostname, filename = remote:match("^([%a][%a%d_]+)@([%d.]+):([%a%d%p]+)$")
+  if username and hostname and filename then
+    if not validateIP(hostname) then hostname = nil end
   else
     -- Match hostname
-    user, host, file = remote:match("^([%a][%a%d_]+)@([%a][%a%d_]+):([%a%d%p]+)$")
-    if host and string.len(host) > 20 then host = nil end
+    username, hostname, filename = remote:match("^([%a][%a%d_]+)@([%a][%a%d_]+):([%a%d%p]+)$")
+    if hostname and string.len(hostname) > 20 then hostname = nil end
   end
-  if string.len(user) > 20 then user = nil end
-  -- if user and host and file then
+  if string.len(username) > 20 then username = nil end
+  -- if username and hostname and filename then
   --   print('\nValid')
   -- else
   --   print('\nInvalid')
   -- end
-  return(user and host and file)
+  return(username and hostname and filename)
 end
 
 function validateSrc(src)
@@ -161,14 +161,13 @@ end
 --]]
 
 dbFilename = 'multi-sync.sqlite3'
-configFilename = 'multi-sync-config.lua'
 computerName, userName, configDir = os.getenv('COMPUTERNAME'), os.getenv('USERNAME'), os.getenv('CONFIGDIR')
 if (not computerName) or (not userName) or (not configDir) then
   print('Set environment variables COMPUTERNAME, USERNAME and CONFIGDIR prior to calling Lua')
   os.exit(2)
 end
 dbFile = path.join(configDir, dbFilename)
-configFile = path.join(configDir, configFilename)
+configFile = path.join(configDir, 'multi-sync-config.lua')
 local db
 env = luasql.sqlite3()
 local parser = argparse('multi-sync', 'Rules-based script for using rsync or robocopy to automate backups', copyright)
@@ -179,7 +178,6 @@ parser:mutex(
     :action(
       function()
         print('multi-sync '..multisync_version..'\n')
-        --local file = io.popen('lua -v'); print(file:read())
         print(_VERSION)
         print(lfs._VERSION)
         print(luasql._VERSION)
@@ -235,7 +233,7 @@ if args.initialize then
   db = env:connect(dbFile)
   -- This one can't use executeSQL because it is guaranteed to fail the first time since the table doesn't exist
   db:execute('drop table sync_history')
-  -- Windows file systems aren't case-sensitive so the database that keeps track shouldn't be either, use 'collate nocase' for src and dest
+  -- Windows filesystems aren't case-sensitive so the database that keeps track shouldn't be either, use 'collate nocase' for src and dest
   if path.is_windows then
     executeSQL(db, [[
       create table sync_history(

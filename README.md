@@ -77,65 +77,57 @@ rmdir /s /q multi-sync-4.3
   * expression - evaluated as a boolean, so anything other than false is true. If false, the rule will be skipped
   * options - additional options for robocopy (Windows) or rsync (Linux)
 
-  In expression, src, dest, pre and post, {computername} and {username} will be replaced with the actual computername and username.
-
-  Windows filespecs use [[]] because otherwise \ would be interpreted as an escape character.
-
 ### Sample Linux config file
 
 ```lua
---[=[
-  multi-sync-config.lua
-]=]
+--[[ multi-sync-config.lua ]]
 
 rules = {
   {
     name = 'home',
     src  = '/home/',
-    dest = '/media/{username}/backup/{computername}/home/'
+    dest = '/media/'..userName..'/backup/'..computerName..'/home/'
   }
 }
 
-post = [[
-  if isDir('/media/{username}/backup/{computername}/home/{username}/.config/') then
-    copyFile(dbFile, '/media/{username}/backup/{computername}/home/{username}/.config/')
+function post()
+  if isDir('/media/'..userName..'/backup/'..computerName..'/home/'..userName..'/.config/') then
+    copyFile(dbFile, '/media/'..userName..'/backup/'..computerName..'/home/'..userName..'/.config/')
   end
-]]
+end
 ```
 
 ### Sample Windows config file
 
 ```lua
---[=[
-  multi-sync-config.lua
-]=]
+--[[ multi-sync-config.lua ]]
 
 rules = {
   {
     name = 'documents',
-    src  = [[C:\Users\{username}\Documents]],
-    dest = [[E:\backup\{computername}\{username}\Documents]]
+    src  = 'C:\\Users\\'..userName..'\\Documents',
+    dest = 'E:\backup\\'..computerName..'\\'..userName..'\\Documents'
   },
   {
     name = 'music',
-    src  = [[C:\Users\{username}\Music]],
-    dest = [[E:\backup\{computername}\{username}\Music]]
+    src  = 'C:\\Users\\'..userName..'\\Music',
+    dest = 'E:\\backup\\'..computerName..'\\'..userName..'\\Music'
   },
   {
     name = 'pictures',
-    src  = [[C:\Users\{username}\Pictures]],
-    dest = [[E:\backup\{computername}\{username}\Pictures]]
+    src  = 'C:\\Users\\'..userName..'\\Pictures',
+    dest = 'E:\\backup\\'..computerName..'\\'..userName..'\\Pictures'
   },
   {
     name = 'videos',
-    src  = [[C:\Users\{username}\Videos]],
-    dest = [[E:\backup\{computername}\{username}\Videos]]
+    src  = 'C:\\Users\\'..userName..'\\Videos',
+    dest = 'E:\\backup\\'..computerName..'\\'..userName..'\\Videos'
   },
 }
 
-post = [=[
-  if isDir([[E:\backup\{computername}\{username}\AppData\Local]]) then
-    copyFile(dbFile, [[E:\backup\{computername}\{username}\AppData\Local]])
+function post()
+  if isDir('E:\backup\\'..computerName..'\\'..userName..'\\AppData\\Local') then
+    copyFile(dbFile, 'E:\\backup\\'..computerName..'\\'..userName..'\\AppData\\Local')
   end
-]=]
+end
 ```
