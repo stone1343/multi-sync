@@ -122,7 +122,7 @@ rules = {
     name = 'videos',
     src  = 'C:\\Users\\'..userName..'\\Videos',
     dest = 'E:\\backup\\'..computerName..'\\'..userName..'\\Videos'
-  },
+  }
 }
 
 function post()
