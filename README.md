@@ -32,17 +32,17 @@ sudo luarocks install argparse
 sudo luarocks install penlight
 ```
 
-Install multi-sync v4.3
+Install multi-sync v5.0
 
 ```bash
 cd ~/Downloads
-[ -d multi-sync-4.3 ] && rm -rf multi-sync-4.3
-git clone --depth 1 --branch v4.3 https://github.com/stone1343/multi-sync.git multi-sync-4.3
-if [ -d "multi-sync-4.3" ]; then
-  cd multi-sync-4.3
+[ -d multi-sync-5.0 ] && rm -rf multi-sync-5.0
+git clone --depth 1 --branch v5.0 https://github.com/stone1343/multi-sync.git multi-sync-5.0
+if [ -d "multi-sync-5.0" ]; then
+  cd multi-sync-5.0
   sudo ./install
   cd ..
-  rm -rf multi-sync-4.3
+  rm -rf multi-sync-5.0
 fi
 ```
 
@@ -54,16 +54,16 @@ sudo mkdir -p /media/$USER/backup/$HOSTNAME/home
 
 ## Windows
 
-Install multi-sync v4.3 to %USERPROFILE%\bin
+Install multi-sync v5.0 to %USERPROFILE%\bin
 
 ```
 cd %USERPROFILE%\Downloads
-if exist multi-sync-4.3\. rmdir /s /q multi-sync-4.3
-git clone --depth 1 --branch v4.3 https://github.com/stone1343/multi-sync.git multi-sync-4.3
-cd multi-sync-4.3
+if exist multi-sync-5.0\. rmdir /s /q multi-sync-5.0
+git clone --depth 1 --branch v5.0 https://github.com/stone1343/multi-sync.git multi-sync-5.0
+cd multi-sync-5.0
 call install %USERPROFILE%\bin
 cd ..
-rmdir /s /q multi-sync-4.3
+rmdir /s /q multi-sync-5.0
 ```
 
 ## Config file
@@ -91,8 +91,8 @@ rules = {
 }
 
 function post()
-  if isDir('/media/'..userName..'/backup/'..computerName..'/home/'..userName..'/.config/') then
-    copyFile(dbFile, '/media/'..userName..'/backup/'..computerName..'/home/'..userName..'/.config/')
+  if isDir('/media/'..userName..'/backup/'..computerName) then
+    copyFile(dbFile, '/media/'..userName..'/backup/'..computerName)
   end
 end
 ```
@@ -126,8 +126,8 @@ rules = {
 }
 
 function post()
-  if isDir('E:\\backup\\'..computerName..'\\'..userName..'\\AppData\\Local') then
-    copyFile(dbFile, 'E:\\backup\\'..computerName..'\\'..userName..'\\AppData\\Local')
+  if isDir('E:\\backup\\'..computerName) then
+    copyFile(dbFile, 'E:\\backup\\'..computerName)
   end
 end
 ```
